@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1025632038015",
+    "project_id": "night-fall-restaurant",
+    "storage_bucket": "night-fall-restaurant.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025632038015:android:d64d5532378f05d341234a",
+        "android_client_info": {
+          "package_name": "com.example.night_fall_restaurant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR45Dco6P_LqE7YYx1vTlu_KDVMSqwXgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
