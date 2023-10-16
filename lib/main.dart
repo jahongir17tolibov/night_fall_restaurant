@@ -1,14 +1,16 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:night_fall_restaurant/core/theme/theme.dart';
 import 'package:night_fall_restaurant/core/theme/theme_manager.dart';
+import 'package:night_fall_restaurant/feature/splash/SplashScreen.dart';
 import 'package:night_fall_restaurant/utils/custom_tab_bar_indicator.dart';
-import 'package:scrollable_list_tab_scroller/scrollable_list_tab_scroller.dart';
 import 'firebase_options.dart';
+import 'core/navigation/router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,28 +26,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      onGenerateRoute: RouterNavigation.generateRoute,
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
       theme: lightTheme,
       darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
-      home: const MyHomePage(title: 'Night Fall Restaurant'),
+      themeMode: _themeManager.themeMode,
+      home: const SplashScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+ThemeManager _themeManager = ThemeManager();
 
-  final String title;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
-  final double gridItemHeight = 220.0; // taxminiy grid item height
+  final ScrollController _scrollController =
+      ScrollController(keepScrollOffset: false);
   int _selectedTabIndex = 0;
   List<double> itemOffsets = [];
 
@@ -81,19 +83,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     DemoTabItems(category: 'Boshqa', items: [
       Items('boshqacha1', '222'),
       Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
+      Items('boshqacha2', '2'),
     ]),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-
-    // har bir categoriya itemlari uchun offset (dehqonchasiga)
+  void setupScrollController({required gridItemHeight}) {
     double offset = 0.0;
     productsData.forEach((category) {
-      itemOffsets.add(offset);
+      itemOffsets.add(offset); //birinchi categoriya itemlari 0.0 dan boshlanadi
       offset += (gridItemHeight * category.items.length) / 2;
+      print('${category.items.length} and $offset');
     });
+
+    print('$_selectedTabIndex and $gridItemHeight');
 
     _scrollController.addListener(() {
       double currentOffset = _scrollController.offset;
@@ -115,26 +125,50 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _themeManager.addListener(themeListeners);
+    // setupScrollController(gridItemHeight: );
+  }
+
+  @override
   void dispose() {
-    _scrollController.dispose();
+    _themeManager.dispose();
+    _scrollController.removeListener(themeListeners);
     super.dispose();
+  }
+
+  void themeListeners() {
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final double itemHeight = (size.height - kToolbarHeight - 24) / 3.5;
+    final double itemWidth = size.width / 2;
+
+    // setupScrollController(gridItemHeight: itemHeight);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0.5,
         actions: [
-          Icon(
-            Icons.light_mode_rounded,
-            color: Theme.of(context).colorScheme.onSurface,
+          IconButton(
+            onPressed: () {
+              bool themeModeValue = _themeManager.themeMode == ThemeMode.dark;
+              _themeManager.toggleTheme(themeModeValue);
+            },
+            icon: Icon(
+              Icons.light_mode_rounded,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           const SizedBox(width: 16.0)
         ],
         title: Text(
-          widget.title,
+          'Night Fall Restaurant',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         bottom: TabBar(
@@ -159,18 +193,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           onTap: (categoryIndex) {
             setState(() {
               _selectedTabIndex = categoryIndex;
+              _scrollToCategory(categoryIndex);
             });
-            _scrollToCategory(categoryIndex);
           },
         ),
       ),
       body: Center(
-          child: Expanded(
-              child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.9,
+          childAspectRatio: (itemWidth / itemHeight),
         ),
+        shrinkWrap: true,
+        scrollDirection: Axis.vertical,
         padding: const EdgeInsets.all(10.0),
         controller: _scrollController,
         itemCount: productsData.expand((category) => category.items).length,
@@ -184,16 +219,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             price: item.price,
             context: context,
           );
+          // return Container()
           return itemSize;
         },
-      ))),
+      )),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: Icon(
           Icons.shopping_cart_rounded,
           color: Theme.of(context).colorScheme.onPrimary,
         ),
-        onPressed: () {},
+        onPressed: () async {
+          // await addMenuToFireStore();
+        },
       ),
     );
   }
