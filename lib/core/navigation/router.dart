@@ -12,7 +12,7 @@ class RouterNavigation {
       case splashRoute:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case homeRoute:
-        return MaterialPageRoute(builder: (_) => const MyHomePage());
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(
