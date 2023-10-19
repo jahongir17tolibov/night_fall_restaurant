@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:night_fall_restaurant/feature/home/HomeScreen.dart';
+import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/splash/SplashScreen.dart';
 import 'package:night_fall_restaurant/main.dart';
 

@@ -37,6 +37,9 @@ dependencies:
   # for dependency injection
   get_it: ^7.6.4
 
+  # shared prefs:
+  shared_preferences: ^2.2.2
+
   cupertino_icons: ^1.0.2
 
 dev_dependencies:
@@ -52,6 +55,8 @@ flutter:
     - assets/anim/animation_lnom89oi.json
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+    - assets/images/coca_cola.jpeg
+    - assets/images/double_arrow_up_thin.png
   fonts:
     - family: GreatVibes
       fonts:
@@ -63,13 +68,9 @@ flutter:
           weight: 700
         - asset: assets/fonts/K2D-Light.ttf
           weight: 200
-        - asset: assets/fonts/K2D-Medium.ttf
-          weight: 400
         - asset: assets/fonts/K2D-Regular.ttf
         - asset: assets/fonts/K2D-SemiBold.ttf
           weight: 500
-        - asset: assets/fonts/K2D-Thin.ttf
-          weight: 100
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

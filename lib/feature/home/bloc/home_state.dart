@@ -14,7 +14,13 @@ class HomeSuccessState extends HomeState {
 }
 
 class HomeErrorState extends HomeState {
-  final String exception;
+  final String error;
 
-  HomeErrorState({required this.exception});
+  HomeErrorState({required this.error});
+}
+
+class ThemeState extends HomeState {
+  final ThemeData isDark;
+
+  ThemeState(this.isDark);
 }

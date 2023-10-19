@@ -9,4 +9,10 @@ class HomeOnAddToCartEvent extends HomeEvent {}
 
 class HomeOnNavigateToCartScreenEvent extends HomeEvent {}
 
-class HomeOnChangeThemeEvent extends HomeEvent {}
+class HomeOnGetThemeEvent extends HomeEvent {}
+
+class HomeOnChangeThemeEvent extends HomeEvent {
+  final bool isDark;
+
+  HomeOnChangeThemeEvent(this.isDark);
+}

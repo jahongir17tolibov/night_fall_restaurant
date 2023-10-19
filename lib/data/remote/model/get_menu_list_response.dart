@@ -16,11 +16,20 @@ class GetMenuListResponse {
         'menu_products': menu_products,
       };
 
-  factory GetMenuListResponse.fromMap(Map<String, dynamic> map) =>
-      GetMenuListResponse(
-        menu_categories: map['menu_categories'],
-        menu_products: map['menu_products'],
-      );
+  factory GetMenuListResponse.fromMap(Map<String, dynamic> map) {
+    List<dynamic> categoriesData = map['menu_categories'];
+    List<dynamic> menuProductsData = map['menu_products'];
+
+    List<Categories> categoriesList =
+        categoriesData.map((category) => Categories.fromMap(category)).toList();
+    List<MenuList> menuProductsList =
+        menuProductsData.map((products) => MenuList.fromMap(products)).toList();
+
+    return GetMenuListResponse(
+      menu_categories: categoriesList,
+      menu_products: menuProductsList,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>

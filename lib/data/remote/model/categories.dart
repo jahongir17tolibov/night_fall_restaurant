@@ -3,7 +3,15 @@ class Categories {
   final String category_id;
   final String category_name;
 
-  Categories(this.category_id, this.category_name);
+  Categories({required this.category_id, required this.category_name});
+
+  Map<String, dynamic> toMap() => <String, dynamic>{
+        'category_id': category_id,
+        'category_name': category_name,
+      };
+
+  factory Categories.fromMap(Map<String, dynamic> map) => Categories(
+      category_id: map['category_id'], category_name: map['category_name']);
 
   @override
   bool operator ==(Object other) =>
