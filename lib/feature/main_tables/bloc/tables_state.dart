@@ -8,7 +8,7 @@ class TablesLoadingState extends TablesState {
 }
 
 class TablesSuccessState extends TablesState {
-  final List<ChangeTableModel> tablePasswords;
+  final List<TablesPasswordDto> tablePasswords;
 
   TablesSuccessState({required this.tablePasswords}) : super();
 }

@@ -9,6 +9,9 @@ class HomeOnAddToCartEvent extends HomeEvent {}
 
 class HomeOnNavigateToCartScreenEvent extends HomeEvent {}
 
+class HomeOnRefreshEvent extends HomeEvent {}
+
+/// keyin...
 class HomeOnGetThemeEvent extends HomeEvent {}
 
 class HomeOnChangeThemeEvent extends HomeEvent {

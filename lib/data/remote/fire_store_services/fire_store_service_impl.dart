@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/change_table_model.dart';
+import '../model/change_table_model_response.dart';
 import '../model/get_menu_list_response.dart';
 import 'fire_store_service.dart';
 
@@ -10,8 +10,7 @@ class FireStoreServiceImpl extends FireStoreService {
   static const String menuDocsPath = '1_categories';
 
   @override
-  Future<List<GetMenuListResponse>> getMenuList() async {
-    List<GetMenuListResponse> menuList = [];
+  Future<GetMenuListResponse> getMenuList() async {
     try {
       final docRef = fireStore.collection(menuCollectionPath).doc(menuDocsPath);
       DocumentSnapshot documentSnapshot = await docRef.get();
@@ -19,28 +18,30 @@ class FireStoreServiceImpl extends FireStoreService {
       if (documentSnapshot.exists) {
         Map<String, dynamic> data =
             documentSnapshot.data() as Map<String, dynamic>;
-        menuList.add(GetMenuListResponse.fromMap(data));
+        return GetMenuListResponse.fromMap(data);
       } else {
-        Exception('Document doesn`t exist');
+        throw Exception('Document doesn`t exist');
       }
     } on FirebaseException catch (fireException) {
-      Exception(fireException.message);
+      throw Exception(fireException.message);
     }
-    return menuList;
   }
 
   @override
-  Future<List<ChangeTableModel>> getTablePasswords() async {
-    final List<ChangeTableModel> tablePasswordsList = [];
+  Future<List<ChangeTableModelResponse>> getTablePasswords() async {
     try {
       final tablesQuery = await fireStore
           .collection(tablesCollectionPath)
           .orderBy('tableNumber')
           .get();
-      tablesQuery.docs.forEach((it) {
-        return tablePasswordsList.add(ChangeTableModel.fromMap(it.data()));
-      });
-      return tablePasswordsList;
+      final docsCollect = tablesQuery.docs;
+      if (docsCollect.isNotEmpty) {
+        return docsCollect
+            .map((it) => ChangeTableModelResponse.fromMap(it.data()))
+            .toList();
+      } else {
+        throw Exception('Document doesn`t exist');
+      }
     } catch (exception) {
       throw Exception(exception);
     }

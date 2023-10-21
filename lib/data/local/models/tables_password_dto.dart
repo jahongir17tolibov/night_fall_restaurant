@@ -1,6 +1,8 @@
+import 'package:night_fall_restaurant/data/remote/model/change_table_model_response.dart';
+
 class TablesPasswordDto {
   final int? id;
-  final num tableNumber;
+  final int tableNumber;
   final String tablePassword;
 
   TablesPasswordDto({
@@ -20,6 +22,14 @@ class TablesPasswordDto {
         id: map['id'],
         tableNumber: map['tableNumber'],
         tablePassword: map['tablePassword'],
+      );
+
+  factory TablesPasswordDto.fromTablesPasswordResponse({
+    required ChangeTableModelResponse tablesResponse,
+  }) =>
+      TablesPasswordDto(
+        tableNumber: tablesResponse.tableNumber,
+        tablePassword: tablesResponse.tablePassword,
       );
 
   @override

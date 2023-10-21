@@ -10,9 +10,8 @@ class MainTableScreen extends StatefulWidget {
 }
 
 class _MainTableScreenState extends State<MainTableScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _selectedNumber = 0;
-  late double _scale;
   late AnimationController _animateController;
 
   static const double kItemExtent = 32;
@@ -23,9 +22,7 @@ class _MainTableScreenState extends State<MainTableScreen>
     _animateController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
-    )..addListener(() {
-        setState(() {});
-      });
+    );
     super.initState();
   }
 
@@ -37,8 +34,6 @@ class _MainTableScreenState extends State<MainTableScreen>
 
   @override
   Widget build(BuildContext context) {
-    // set value to _scale
-    _scale = 1 - _animateController.value;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -81,59 +76,56 @@ class _MainTableScreenState extends State<MainTableScreen>
                   textAlign: TextAlign.center,
                 ),
                 // number of the table
-                GestureDetector(
-                  onTap: () {
-                    _animateController.forward();
-                    Future.delayed(const Duration(milliseconds: 200), () {
-                      _animateController.reverse();
-                    });
-                    _showTablePassword(context);
-                  },
-                  child: Transform.scale(
-                    scale: _scale,
-                    child: Text(
-                      tableNumbers[_selectedNumber],
-                      style: TextStyle(
-                        fontSize: 140.0,
-                        fontFamily: 'Ktwod',
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
+                scaleOnPress(
+                  child: Text(
+                    tableNumbers[_selectedNumber],
+                    style: TextStyle(
+                      fontSize: 140.0,
+                      fontFamily: 'Ktwod',
+                      color: Theme.of(context).colorScheme.onBackground,
                     ),
                   ),
-                ),
+                  controller: _animateController,
+                )
               ],
             ),
           ),
           Center(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+              child: scaleOnPress(
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.onBackground,
+                    minimumSize: const Size(180.0, 50.0),
                   ),
-                  backgroundColor: Theme.of(context).colorScheme.onBackground,
-                  minimumSize: const Size(180.0, 50.0),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      'Go to menu',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Theme.of(context).colorScheme.background,
-                        fontFamily: 'Ktwod',
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'Go to menu',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Theme.of(context).colorScheme.background,
+                          fontFamily: 'Ktwod',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6.0),
-                    Icon(
-                      Icons.keyboard_double_arrow_right_rounded,
-                      color: Theme.of(context).colorScheme.background,
-                    ),
-                  ],
+                      const SizedBox(width: 6.0),
+                      Icon(
+                        Icons.keyboard_double_arrow_right_rounded,
+                        color: Theme.of(context).colorScheme.background,
+                      ),
+                    ],
+                  ),
+                ),
+                controller: AnimationController(
+                  duration: const Duration(milliseconds: 500),
+                  vsync: this,
                 ),
               ),
             ),

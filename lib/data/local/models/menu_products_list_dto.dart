@@ -1,3 +1,6 @@
+import 'package:night_fall_restaurant/data/remote/model/get_menu_list_response.dart';
+import 'package:night_fall_restaurant/data/remote/model/menu_list.dart';
+
 class MenuProductsListDto {
   final int? id;
   final String name;
@@ -32,6 +35,17 @@ class MenuProductsListDto {
         price: map['price'],
         weight: map['weight'],
         productCategoryId: map['productCategoryId'],
+      );
+
+  factory MenuProductsListDto.fromMenuProductsListResponse({
+    required MenuList menuList,
+  }) =>
+      MenuProductsListDto(
+        name: menuList.name,
+        image: menuList.image,
+        price: menuList.price,
+        weight: menuList.weight,
+        productCategoryId: menuList.product_category_id,
       );
 
   @override

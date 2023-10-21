@@ -8,7 +8,7 @@ class HomeLoadingState extends HomeState {
 }
 
 class HomeSuccessState extends HomeState {
-  final List<GetMenuListResponse> response;
+  final List<MenuProductsListDto> response;
 
   HomeSuccessState({required this.response});
 }

@@ -5,7 +5,7 @@ Widget scaleOnPress({
   required AnimationController controller,
 }) =>
     ScaleTransition(
-      scale: Tween<double>(begin: 1.0, end: 0.7).animate(controller),
+      scale: Tween<double>(begin: 1.0, end: 0.8).animate(controller),
       child: GestureDetector(
         onTap: () {
           controller.forward();

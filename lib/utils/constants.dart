@@ -5,7 +5,7 @@ const String intType = 'INTEGER';
 
 //table names
 const menuProductsTableName = 'MenuProducts';
-const tablesPasswordsTableName = 'MenuProducts';
+const tablesPasswordsTableName = 'TablesPassword';
 
 // navigation constants
 const splashRoute = '/';

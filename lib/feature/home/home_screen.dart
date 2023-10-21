@@ -1,13 +1,8 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:night_fall_restaurant/feature/home/bloc/home_bloc.dart';
 
-import '../../core/theme/theme_manager.dart';
 import '../../utils/custom_tab_bar_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,8 +11,6 @@ class HomeScreen extends StatefulWidget {
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
-
-ThemeManager _themeManager = ThemeManager();
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final ScrollController _scrollController =
@@ -41,6 +34,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  final List<String> categories = [
+    'Milliy taomlar',
+    'Turk taomlari',
+    'Salatlar',
+    'Nonlar',
+    'Ichimliklar',
+  ];
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -63,113 +64,91 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
       ),
-      body: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
-        if (state is HomeLoadingState) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is HomeSuccessState) {
-          //for set categories name to tab
-          final categories = state.response
-              .map((getProductsList) {
-                return getProductsList.menu_categories.map(
-                  (category) {
-                    return Tab(text: category.category_name);
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<HomeBloc>().add(HomeOnRefreshEvent());
+        },
+        color: Theme.of(context).colorScheme.onPrimaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        strokeWidth: 3.0,
+        child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
+          if (state is HomeLoadingState) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is HomeSuccessState) {
+            //for set categories name to tab
+            final categoriesList = categories.map((it) {
+              return Tab(text: it);
+            }).toList();
+            //ui🗿
+            return Center(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TabBar(
+                  tabs: categoriesList,
+                  controller: TabController(
+                    animationDuration: const Duration(milliseconds: 400),
+                    length: categories.length,
+                    vsync: this,
+                    initialIndex: _selectedTabIndex,
+                  ),
+                  physics: const ClampingScrollPhysics(),
+                  isScrollable: true,
+                  unselectedLabelColor:
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                  splashBorderRadius:
+                      const BorderRadius.all(Radius.circular(120.0)),
+                  indicator:
+                      CustomTabIndicator(Theme.of(context).colorScheme.primary),
+                  indicatorPadding: const EdgeInsets.all(4.0),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  automaticIndicatorColorAdjustment: true,
+                  dividerColor: Colors.transparent,
+                  onTap: (categoryIndex) {
+                    setState(() {
+                      _selectedTabIndex = categoryIndex;
+                    });
                   },
-                );
-              })
-              .expand((element) => element)
-              .toList();
-          //ui🗿
-          return Center(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TabBar(
-                tabs: categories,
-                controller: TabController(
-                  animationDuration: const Duration(milliseconds: 400),
-                  length: categories.length,
-                  vsync: this,
-                  initialIndex: _selectedTabIndex,
                 ),
-                physics: const ClampingScrollPhysics(),
-                isScrollable: true,
-                unselectedLabelColor:
-                    Theme.of(context).colorScheme.onSurfaceVariant,
-                splashBorderRadius:
-                    const BorderRadius.all(Radius.circular(120.0)),
-                indicator:
-                    CustomTabIndicator(Theme.of(context).colorScheme.primary),
-                indicatorPadding: const EdgeInsets.all(4.0),
-                indicatorSize: TabBarIndicatorSize.tab,
-                automaticIndicatorColorAdjustment: true,
-                dividerColor: Colors.transparent,
-                onTap: (categoryIndex) {
-                  setState(() {
-                    _selectedTabIndex = categoryIndex;
-                  });
-                },
-              ),
-              Expanded(
-                child: ListView.builder(
+                Expanded(
+                    child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          orientation == Orientation.portrait ? 2 : 4,
+                      childAspectRatio: (itemWidth / itemHeight),
+                      mainAxisSpacing: 6.0),
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  padding: const EdgeInsets.all(10.0),
+                  controller: _scrollController,
                   itemCount: state.response.length,
-                  physics: Platform.isIOS
-                      ? const BouncingScrollPhysics(
-                          decelerationRate: ScrollDecelerationRate.fast)
-                      : const BouncingScrollPhysics(
-                          decelerationRate: ScrollDecelerationRate.fast),
-                  itemBuilder: (context, index) {
-                    final getProductsList = state.response[index];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      orientation == Orientation.portrait
-                                          ? 2
-                                          : 4,
-                                  childAspectRatio: (itemWidth / itemHeight),
-                                  mainAxisSpacing: 6.0),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          padding: const EdgeInsets.all(10.0),
-                          controller: _scrollController,
-                          itemCount: getProductsList.menu_products.length,
-                          itemBuilder: (context, itemIndex) {
-                            final item =
-                                getProductsList.menu_products[itemIndex];
-                            final itemSize = gridItemView(
-                              name: item.name,
-                              price: item.price,
-                              image: item.image,
-                              weight: item.weight,
-                              orientation: orientation,
-                              context: context,
-                            );
-                            // return Container()
-                            return itemSize;
-                          },
-                        )
-                      ],
+                  itemBuilder: (context, itemIndex) {
+                    final item = state.response[itemIndex];
+                    final gridItem = gridItemView(
+                      name: item.name,
+                      price: item.price,
+                      image: item.image,
+                      weight: item.weight,
+                      orientation: orientation,
+                      context: context,
                     );
+                    return gridItem;
                   },
-                ),
+                )),
+              ],
+            ));
+          } else if (state is HomeErrorState) {
+            return Center(
+              child: Text(
+                state.error,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
-            ],
-          ));
-        } else if (state is HomeErrorState) {
-          return Center(
-            child: Text(
-              state.error,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          );
-        } else {
-          return Container();
-        }
-      }),
+            );
+          } else {
+            return Container();
+          }
+        }),
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: Icon(

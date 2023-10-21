@@ -46,4 +46,26 @@
  ),
 *
 *
+* scale on press v2.0
+* GestureDetector(
+                  onTap: () {
+                    _animateController.forward();
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      _animateController.reverse();
+                    });
+                    _showTablePassword(context);
+                  },
+                  child: Transform.scale(
+                    scale: _scale,
+                    child: Text(
+                      tableNumbers[_selectedNumber],
+                      style: TextStyle(
+                        fontSize: 140.0,
+                        fontFamily: 'Ktwod',
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                  ),
+                ),
+*
 * */

@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../utils/constants.dart';
 
-class DataBaseDao {
+ class DataBaseDao {
   final DataBaseService myDatabase;
 
   DataBaseDao({required this.myDatabase});

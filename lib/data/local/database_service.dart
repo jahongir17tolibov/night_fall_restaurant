@@ -1,3 +1,5 @@
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
 import '../../utils/constants.dart';
@@ -5,20 +7,21 @@ import '../../utils/constants.dart';
 class DataBaseService {
   static DataBaseService getInstance = DataBaseService._init();
 
+  static const String _dataBaseName = 'night_fall.db';
   sql.Database? _database;
 
   DataBaseService._init();
 
   Future<sql.Database> getDb() async {
-    _database ??= await getDatabaseInstance(dataBaseName: 'night_fall.db');
+    _database ??= await getDatabaseInstance(dataBaseName: _dataBaseName);
     return _database!;
   }
 
   Future<sql.Database> getDatabaseInstance({
     required String dataBaseName,
   }) async {
-    var dbPath = await sql.getDatabasesPath();
-    String path = dbPath + dataBaseName;
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final path = join(documentsDirectory.path, _dataBaseName);
     return await sql.openDatabase(path, version: 1,
         onCreate: (sql.Database db, int version) async {
       await createMenuProductsTable(db); // menu products list data
@@ -30,7 +33,7 @@ class DataBaseService {
       await database.execute("CREATE TABLE $tablesPasswordsTableName("
           "id $idType,"
           "tableNumber $intType,"
-          "tablePassword $stringType,"
+          "tablePassword $stringType"
           ")");
 
   Future<void> createMenuProductsTable(sql.Database database) async =>
@@ -40,6 +43,6 @@ class DataBaseService {
           "image $stringType,"
           "price $stringType,"
           "weight $stringType,"
-          "productCategoryId $stringType,"
+          "productCategoryId $stringType"
           ")");
 }
