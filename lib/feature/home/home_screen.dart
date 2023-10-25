@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:night_fall_restaurant/feature/home/bloc/home_bloc.dart';
+import 'package:night_fall_restaurant/utils/helpers.dart';
 
-import '../../utils/custom_tab_bar_indicator.dart';
+import '../../utils/ui_components/custom_tab_bar_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = fillMaxSize(context);
     final orientation = MediaQuery.of(context).orientation;
     final double itemHeight = orientation == Orientation.portrait
         ? (size.height - kToolbarHeight - 24) / 2.45
@@ -119,12 +122,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       mainAxisSpacing: 6.0),
                   shrinkWrap: true,
                   scrollDirection: Axis.vertical,
+                  physics: Platform.isIOS
+                      ? const BouncingScrollPhysics(
+                          decelerationRate: ScrollDecelerationRate.fast)
+                      : const BouncingScrollPhysics(
+                          decelerationRate: ScrollDecelerationRate.fast),
                   padding: const EdgeInsets.all(10.0),
                   controller: _scrollController,
                   itemCount: state.response.length,
                   itemBuilder: (context, itemIndex) {
                     final item = state.response[itemIndex];
-                    final gridItem = gridItemView(
+                    final gridItem = _gridItemView(
                       name: item.name,
                       price: item.price,
                       image: item.image,
@@ -158,11 +166,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         onPressed: () async {
           // await addMenuToFireStore();
         },
+
       ),
     );
   }
 
-  static Text gridItemText({
+  static Text _gridItemText({
     required String text,
     required double fontSize,
     required FontWeight fontWeight,
@@ -181,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         maxLines: 1,
       );
 
-  Widget gridItemView({
+  Widget _gridItemView({
     required String name,
     required String price,
     required String image,
@@ -189,6 +198,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Orientation orientation,
     required BuildContext context,
   }) {
+    ElevatedButton addToCartButton = ElevatedButton.icon(
+      onPressed: () async {},
+      icon: Icon(
+        Icons.add_rounded,
+        color: Theme.of(context).colorScheme.onTertiary,
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.tertiary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(fillMaxWidth(context)),
+        ),
+        minimumSize: Size(fillMaxWidth(context), 36.0),
+        elevation: 4.0,
+      ),
+      label: _gridItemText(
+        text: "Qo'shish",
+        fontSize: 13.0,
+        fontWeight: FontWeight.normal,
+        textColor: Theme.of(context).colorScheme.onTertiary,
+        context: context,
+      ),
+    );
     return Card(
         color: Theme.of(context).colorScheme.primaryContainer,
         shape: RoundedRectangleBorder(
@@ -228,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   //product`s price text
-                  gridItemText(
+                  _gridItemText(
                     text: price,
                     fontSize: 18.0,
                     fontWeight: FontWeight.w700,
@@ -236,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     context: context,
                   ),
                   //product name text
-                  gridItemText(
+                  _gridItemText(
                     text: name,
                     fontSize: 13.0,
                     fontWeight: FontWeight.normal,
@@ -245,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 12),
                   //product weight text
-                  gridItemText(
+                  _gridItemText(
                     text: weight,
                     fontSize: 12.0,
                     fontWeight: FontWeight.normal,
@@ -253,32 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     context: context,
                   ),
                   const SizedBox(height: 4),
-                  ElevatedButton.icon(
-                    onPressed: () async {},
-                    icon: Icon(
-                      Icons.add_rounded,
-                      color: Theme.of(context).colorScheme.onTertiary,
-                    ),
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStatePropertyAll(
-                        Theme.of(context).colorScheme.tertiary,
-                      ),
-                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          MediaQuery.of(context).size.width,
-                        ),
-                      )),
-                      minimumSize:
-                          const MaterialStatePropertyAll(Size.fromHeight(36.0)),
-                    ),
-                    label: gridItemText(
-                      text: "Qo'shish",
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.normal,
-                      textColor: Theme.of(context).colorScheme.onTertiary,
-                      context: context,
-                    ),
-                  ),
+                  addToCartButton /* add to cart button */,
                 ],
               ))
             ],

@@ -1,9 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:night_fall_restaurant/core/theme/theme_manager.dart';
-import 'package:night_fall_restaurant/data/local/database_dao.dart';
-import 'package:night_fall_restaurant/data/local/database_service.dart';
+import 'package:night_fall_restaurant/data/local/db/database_dao.dart';
+import 'package:night_fall_restaurant/data/local/db/database_service.dart';
 import 'package:night_fall_restaurant/data/remote/fire_store_services/fire_store_service_impl.dart';
 import 'package:night_fall_restaurant/data/shared/shared_preferences.dart';
+import 'package:night_fall_restaurant/domain/use_cases/get_menu_categories_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_menu_products_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_tables_password_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/tables_password_use_case.dart';
@@ -22,6 +23,7 @@ Future<void> setupDependencies() async {
   getIt.registerFactory<HomeBloc>(() => HomeBloc(
         syncMenuProductsUseCase: getIt<SyncMenuProductsUseCase>(),
         getMenuListUseCase: getIt<GetMenuListUseCase>(),
+        getMenuCategoriesUseCase: getIt<GetMenuCategoriesUseCase>(),
         sharedPreferences: getIt<AppSharedPreferences>(),
       ));
 
@@ -47,6 +49,9 @@ Future<void> setupDependencies() async {
 
   getIt.registerLazySingleton<SyncTablesPasswordUseCase>(
       () => SyncTablesPasswordUseCase(getIt<Repository>()));
+
+  getIt.registerLazySingleton<GetMenuCategoriesUseCase>(
+      () => GetMenuCategoriesUseCase(getIt<Repository>()));
 
   /// database
   getIt.registerLazySingleton<DataBaseService>(

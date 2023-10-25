@@ -1,11 +1,12 @@
-import 'package:night_fall_restaurant/data/local/database_service.dart';
-import 'package:night_fall_restaurant/data/local/models/menu_products_list_dto.dart';
-import 'package:night_fall_restaurant/data/local/models/tables_password_dto.dart';
+import 'package:night_fall_restaurant/data/local/db/database_service.dart';
+import 'package:night_fall_restaurant/data/local/entities/menu_categories_dto.dart';
+import 'package:night_fall_restaurant/data/local/entities/menu_products_list_dto.dart';
+import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../utils/constants.dart';
+import '../../../utils/constants.dart';
 
- class DataBaseDao {
+class DataBaseDao {
   final DataBaseService myDatabase;
 
   DataBaseDao({required this.myDatabase});
@@ -14,6 +15,12 @@ import '../../utils/constants.dart';
       await insertToDatabaseHelper(
         menuProductsTableName,
         menuList.toMap(),
+      );
+
+  Future<void> insertMenuCategories(MenuCategoriesDto categories) async =>
+      await insertToDatabaseHelper(
+        menuCategoriesTableName,
+        categories.toMap(),
       );
 
   Future<void> insertTablesPassword(TablesPasswordDto tablesPassword) async =>
@@ -30,6 +37,14 @@ import '../../utils/constants.dart';
     return query.map((e) => MenuProductsListDto.fromMap(e)).toList();
   }
 
+  Future<List<MenuCategoriesDto>> getCachedMenuCategories() async {
+    final List<Map<String, dynamic>> query = await getFromDatabaseHelper(
+      tableName: menuCategoriesTableName,
+      orderBy: 'id ASC',
+    );
+    return query.map((e) => MenuCategoriesDto.fromMap(e)).toList();
+  }
+
   Future<List<TablesPasswordDto>> getCachedTablesPassword() async {
     final List<Map<String, dynamic>> query = await getFromDatabaseHelper(
       tableName: tablesPasswordsTableName,
@@ -43,6 +58,13 @@ import '../../utils/constants.dart';
         tableName: menuProductsTableName,
         dataValues: menuList.toMap(),
         whereArguments: [menuList.id],
+      );
+
+  Future<void> updateMenuCategoriesList(MenuCategoriesDto categories) async =>
+      updateTableFromDataBaseHelper(
+        tableName: menuCategoriesTableName,
+        dataValues: categories.toMap(),
+        whereArguments: [categories.id],
       );
 
   Future<void> updateTablesPassword(TablesPasswordDto tablesPasswords) async =>

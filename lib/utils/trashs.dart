@@ -68,4 +68,64 @@
                   ),
                 ),
 *
+*
+*
+*
+* INPUT DECORATION #############################################################
+*
+          decoration: InputDecoration(
+            errorText: (state is TablesPasswordInputErrorState)
+                ? state.passwordError
+                : null,
+            floatingLabelStyle: TextStyle(
+              color: textFieldFocusNode.hasFocus
+                  ? Theme.of(context).colorScheme.secondary
+                  : Theme.of(context).colorScheme.outline,
+            ),
+            labelText: hintText,
+            hintMaxLines: 1,
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outline, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.secondary, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+            ),
+            errorStyle: TextStyle(
+                color: Theme.of(context).colorScheme.error, fontSize: 18.0),
+            labelStyle: TextStyle(
+              fontSize: 16.0,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            suffixIcon: IconButton(
+              onPressed: () {
+                setState(() {
+                  _isObscure = !_isObscure;
+                });
+              },
+              icon: Icon(
+                _isObscure
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
+                color: textFieldFocusNode.hasFocus
+                    ? Theme.of(context).colorScheme.secondary
+                    : Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
+*
 * */
