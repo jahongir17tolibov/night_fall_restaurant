@@ -8,7 +8,7 @@ class AppSharedPreferences {
 
   Future<int> getTableNumber() async {
     final prefs = await getInstance;
-    return prefs.getInt(tableNumbKey) ?? 0;
+    return prefs.getInt(tableNumbKey) ?? 1;
   }
 
   Future<bool> setTableNumber(int tableNumber) async {

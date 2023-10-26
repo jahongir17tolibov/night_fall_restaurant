@@ -1,11 +1,11 @@
 import 'package:night_fall_restaurant/data/local/entities/menu_categories_dto.dart';
 import 'package:night_fall_restaurant/data/local/entities/menu_products_list_dto.dart';
 import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
-import 'package:night_fall_restaurant/domain/repository/repository.dart';
+import 'package:night_fall_restaurant/domain/repository/main_repository/repository.dart';
 
-import '../../data/local/db/database_dao.dart';
-import '../../data/remote/fire_store_services/fire_store_result.dart';
-import '../../data/remote/fire_store_services/fire_store_service.dart';
+import '../../../data/local/db/database_dao.dart';
+import '../../../data/remote/fire_store_services/fire_store_result.dart';
+import '../../../data/remote/fire_store_services/fire_store_service.dart';
 
 class RepositoryImpl extends Repository {
   final FireStoreService fireStoreService;
@@ -52,6 +52,7 @@ class RepositoryImpl extends Repository {
 
   @override
   Future<void> syncTablesPassword() async {
+    print('sync is working');
     final tablesPasswordFromFireStore =
         await fireStoreService.getTablePasswords();
     final getCachedTablesPassword = await dao.getCachedTablesPassword();
@@ -61,13 +62,14 @@ class RepositoryImpl extends Repository {
         TablesPasswordDto.fromTablesPasswordResponse(tablesResponse: data));
 
     /// if is tablesPassword table empty insert data to table else update existing data
-    mappingTablesPassword.forEach((data) {
+    for (var data in mappingTablesPassword) {
       if (getCachedTablesPassword.isEmpty) {
         dao.insertTablesPassword(data);
       } else {
+        print('update is works');
         dao.updateTablesPassword(data);
       }
-    });
+    }
   }
 
   @override
@@ -100,17 +102,16 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<FireStoreResult<List<MenuCategoriesDto>>>
-      getMenuCategoriesFromDb() async {
+  Future<List<MenuCategoriesDto>> getMenuCategoriesFromDb() async {
     try {
       final getMenuCategoriesDto = await dao.getCachedMenuCategories();
       if (getMenuCategoriesDto.isNotEmpty) {
-        return SUCCESS(data: getMenuCategoriesDto);
+        return getMenuCategoriesDto;
       } else {
-        return FAILURE(exception: _ifEmptyDataException);
+        throw Exception('categories List is empty');
       }
     } on Exception catch (e) {
-      return FAILURE(exception: e);
+      throw Exception(e.toString());
     }
   }
 }

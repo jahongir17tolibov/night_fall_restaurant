@@ -8,6 +8,7 @@ import 'package:night_fall_restaurant/data/remote/fire_store_services/fire_store
 import 'package:night_fall_restaurant/domain/use_cases/get_menu_categories_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_menu_products_use_case.dart';
 
+import '../../../data/local/entities/menu_categories_dto.dart';
 import '../../../data/shared/shared_preferences.dart';
 import '../../../domain/use_cases/get_menu_list_use_case.dart';
 
@@ -69,9 +70,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> fetchMenuList(Emitter<HomeState> emit) async {
     final menuProducts = await getMenuListUseCase.call();
+    final categories = await getMenuCategoriesUseCase.call();
     switch (menuProducts) {
       case SUCCESS():
-        emit(HomeSuccessState(response: menuProducts.data));
+        emit(HomeSuccessState(
+          response: menuProducts.data,
+          menuCategories: categories,
+        ));
         break;
 
       case FAILURE():

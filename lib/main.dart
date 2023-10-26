@@ -21,6 +21,13 @@ void main() async {
   runApp(const MyApp());
 }
 
+/// tasks
+///
+/// 1 - Sync tabBar to GridView
+/// 2 - Dark Light Theme
+/// 3 - number picker state problem
+///
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -37,7 +44,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: appLightTheme,
         darkTheme: appDarkTheme,
-        home: const MainTableScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

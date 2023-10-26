@@ -27,6 +27,7 @@ class DataBaseService {
       await createMenuCategoriesTable(db); // menu categories data
       await createMenuProductsTable(db); // menu products list data
       await createTablePasswordsTable(db); // tables with passwords data
+      await createOrdersTable(db); // tables for
     });
   }
 
@@ -52,5 +53,15 @@ class DataBaseService {
           "id $idType,"
           "tableNumber $intType,"
           "tablePassword $stringType"
+          ")");
+
+  Future<void> createOrdersTable(sql.Database database) async =>
+      await database.execute("CREATE TABLE $ordersTableName("
+          "id $idType,"
+          "name $stringType,"
+          "image $stringType,"
+          "price $stringType,"
+          "productCategoryId $stringType,"
+          "quantity $intType"
           ")");
 }

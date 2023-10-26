@@ -5,11 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:night_fall_restaurant/feature/home/bloc/home_bloc.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
+import 'package:night_fall_restaurant/utils/ui_components/shimmer_gradient.dart';
+import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
 
+import '../../utils/constants.dart';
 import '../../utils/ui_components/custom_tab_bar_indicator.dart';
+import '../../utils/ui_components/on_back_navigate.dart';
+import '../../utils/ui_components/skeleton_for_shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.tableNumber});
+
+  final String tableNumber;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -50,18 +57,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final size = fillMaxSize(context);
     final orientation = MediaQuery.of(context).orientation;
     final double itemHeight = orientation == Orientation.portrait
-        ? (size.height - kToolbarHeight - 24) / 2.45
-        : (size.height - kToolbarHeight - 24) / 2.25;
+        ? (size.height - kToolbarHeight - 24) / 2.40
+        : (size.height - kToolbarHeight - 24) / 2.15;
     final double itemWidth =
         orientation == Orientation.portrait ? size.width / 2 : size.height / 4;
-
     // setupScrollController(gridItemHeight: itemHeight);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0.5,
-        actions: const [],
+        leading: onBackNavigate(context, tableRoute),
+        actions: <Widget>[
+          TextView(
+            text: widget.tableNumber,
+            textColor: Theme.of(context).colorScheme.onSurface,
+          ),
+          const SizedBox(width: 20.0),
+        ],
         title: Text(
           'Night Fall Restaurant',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
@@ -76,11 +89,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         strokeWidth: 3.0,
         child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
           if (state is HomeLoadingState) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: Skeleton());
           } else if (state is HomeSuccessState) {
             //for set categories name to tab
-            final categoriesList = categories.map((it) {
-              return Tab(text: it);
+            final categoriesList = state.menuCategories.map((it) {
+              return Tab(text: it.categoryName);
             }).toList();
             //ui🗿
             return Center(
@@ -116,10 +129,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                     child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount:
-                          orientation == Orientation.portrait ? 2 : 4,
-                      childAspectRatio: (itemWidth / itemHeight),
-                      mainAxisSpacing: 6.0),
+                    crossAxisCount: orientation == Orientation.portrait ? 2 : 4,
+                    childAspectRatio: (itemWidth / itemHeight),
+                  ),
                   shrinkWrap: true,
                   scrollDirection: Axis.vertical,
                   physics: Platform.isIOS
@@ -131,14 +143,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   controller: _scrollController,
                   itemCount: state.response.length,
                   itemBuilder: (context, itemIndex) {
-                    final item = state.response[itemIndex];
+                    // sort data by category id
+                    final productsSortedList = state.response
+                      ..sort((it, data) => it.productCategoryId
+                          .compareTo(data.productCategoryId));
+                    // indexing sorted data
+                    final item = productsSortedList[itemIndex];
                     final gridItem = _gridItemView(
                       name: item.name,
                       price: item.price,
                       image: item.image,
                       weight: item.weight,
                       orientation: orientation,
-                      context: context,
                     );
                     return gridItem;
                   },
@@ -166,7 +182,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         onPressed: () async {
           // await addMenuToFireStore();
         },
-
       ),
     );
   }
@@ -176,7 +191,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required double fontSize,
     required FontWeight fontWeight,
     required Color textColor,
-    required BuildContext context,
   }) =>
       Text(
         text,
@@ -196,7 +210,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required String image,
     required String weight,
     required Orientation orientation,
-    required BuildContext context,
   }) {
     ElevatedButton addToCartButton = ElevatedButton.icon(
       onPressed: () async {},
@@ -217,7 +230,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         fontSize: 13.0,
         fontWeight: FontWeight.normal,
         textColor: Theme.of(context).colorScheme.onTertiary,
-        context: context,
       ),
     );
     return Card(
@@ -241,15 +253,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(14.0),
                 child: CachedNetworkImage(
                   imageUrl: image,
-                  width: MediaQuery.of(context).size.width,
+                  width: fillMaxWidth(context),
                   height: 140.0,
                   fit: BoxFit.fill,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
-                      Center(
-                          child: CircularProgressIndicator(
-                    value: downloadProgress.progress,
-                    color: Theme.of(context).colorScheme.tertiary,
-                  )),
+                      Container(
+                    decoration: BoxDecoration(
+                      gradient: shimmerEffect(
+                        context,
+                        AnimationController(
+                          vsync: this,
+                          duration: const Duration(seconds: 1),
+                        )..repeat(reverse: true),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 8.0),
@@ -264,7 +282,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontSize: 18.0,
                     fontWeight: FontWeight.w700,
                     textColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                    context: context,
                   ),
                   //product name text
                   _gridItemText(
@@ -272,7 +289,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontSize: 13.0,
                     fontWeight: FontWeight.normal,
                     textColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                    context: context,
                   ),
                   const SizedBox(height: 12),
                   //product weight text
@@ -281,7 +297,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontSize: 12.0,
                     fontWeight: FontWeight.normal,
                     textColor: Theme.of(context).colorScheme.outline,
-                    context: context,
                   ),
                   const SizedBox(height: 4),
                   addToCartButton /* add to cart button */,

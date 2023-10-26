@@ -28,24 +28,22 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
   }) : super(TablesLoadingState()) {
     on<TablesOnGetPasswordsEvent>(getTablesPassword);
 
-    on<TablesOnPasswordSubmitEvent>(getPasswordSubmit);
-
-    on<TablesOnChangeTextFieldEvent>(onChangeTextField);
+    on<TablesOnPasswordSubmitEvent>(passwordSubmitEvent);
   }
+  //
+  // TextEditingController controller = TextEditingController();
 
-  TextEditingController controller = TextEditingController();
-
-  Future<void> onChangeTextField(
-    TablesOnChangeTextFieldEvent event,
-    Emitter<TablesState> emit,
-  ) async {
-    if (controller.text.length > 12) {
-      showSnackBar(
-        'the length of the password should not be less than 10 characters',
-        event.context,
-      );
-    }
-  }
+  // Future<void> onChangeTextField(
+  //   TablesOnChangeTextFieldEvent event,
+  //   Emitter<TablesState> emit,
+  // ) async {
+  //   if (controller.text.length > 12) {
+  //     showSnackBar(
+  //       'the length of the password should not be less than 12 characters',
+  //       event.context,
+  //     );
+  //   }
+  // }
 
   Future<void> getTablesPassword(
     TablesOnGetPasswordsEvent event,
@@ -85,7 +83,7 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     }
   }
 
-  Future<void> getPasswordSubmit(
+  Future<void> passwordSubmitEvent(
     TablesOnPasswordSubmitEvent event,
     Emitter<TablesState> emit,
   ) async {
@@ -110,7 +108,7 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
             ));
           } else {
             emit(TablesInValidPasswordState(
-              "Invalid table number or password",
+              "Invalid table number or password, try again!",
             ));
             // get old value from sharedPrefs
             emit(TablesSuccessState(
@@ -133,8 +131,9 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     String tablePassword,
   ) {
     for (var it in tablesData) {
-      if (it.tableNumber.toString().contains(tableNumber) &&
-          it.tablePassword.contains(tablePassword)) {
+      print('${it.tableNumber} and ${it.tablePassword} and $tablePassword and $tableNumber');
+      if (it.tableNumber.toString() == tableNumber &&
+          it.tablePassword == tablePassword) {
         sharedPreferences.setTableNumber(it.tableNumber);
         return true;
       }

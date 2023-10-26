@@ -9,7 +9,7 @@ import '../../../utils/constants.dart';
 class DataBaseDao {
   final DataBaseService myDatabase;
 
-  DataBaseDao({required this.myDatabase});
+  DataBaseDao(this.myDatabase);
 
   Future<void> insertMenuProductsList(MenuProductsListDto menuList) async =>
       await insertToDatabaseHelper(

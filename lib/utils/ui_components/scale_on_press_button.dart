@@ -6,7 +6,7 @@ Widget scaleOnPress({
   VoidCallback? onPressed,
 }) =>
     ScaleTransition(
-      scale: Tween<double>(begin: 1.0, end: 0.8).animate(controller),
+      scale: Tween<double>(begin: 1.0, end: 0.25).animate(controller),
       child: GestureDetector(
         onTap: () {
           controller.forward();

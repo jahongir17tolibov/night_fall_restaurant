@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:night_fall_restaurant/domain/repository/repository.dart';
+import 'package:night_fall_restaurant/domain/repository/main_repository/repository.dart';
 
 @immutable
 class SyncTablesPasswordUseCase {
