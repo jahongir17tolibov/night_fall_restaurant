@@ -10,6 +10,7 @@ import 'package:night_fall_restaurant/feature/splash/splash_screen.dart';
 
 import 'core/navigation/router.dart';
 import 'feature/main_tables/main_table_screen.dart';
+import 'feature/orders/bloc/orders_bloc.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -33,11 +34,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("MyApp.build()");
     return MultiBlocProvider(
       providers: [
         BlocProvider<HomeBloc>(create: (context) => getIt<HomeBloc>()),
         BlocProvider<TablesBloc>(create: (context) => getIt<TablesBloc>()),
+        BlocProvider<OrdersBloc>(create: (context) => getIt<OrdersBloc>()),
       ],
       child: MaterialApp(
         onGenerateRoute: RouterNavigation.generateRoute,

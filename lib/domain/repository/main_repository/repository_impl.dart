@@ -4,7 +4,7 @@ import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.da
 import 'package:night_fall_restaurant/domain/repository/main_repository/repository.dart';
 
 import '../../../data/local/db/database_dao.dart';
-import '../../../data/remote/fire_store_services/fire_store_result.dart';
+import '../../../core/result/result_handle.dart';
 import '../../../data/remote/fire_store_services/fire_store_service.dart';
 
 class RepositoryImpl extends Repository {
@@ -33,47 +33,53 @@ class RepositoryImpl extends Repository {
             categories: category));
 
     /// if is menuProductsList table empty insert data to table else update existing data
-    mappingMenuProductsList.forEach((data) {
+    for (var data in mappingMenuProductsList) {
       if (getCachedMenuProductsList.isEmpty) {
-        dao.insertMenuProductsList(data);
+        await dao.insertMenuProductsList(data);
       } else {
-        dao.updateMenuProductsList(data);
+        await dao.updateMenuProductsList(data);
       }
-    });
+    }
 
-    mappingMenuCategories.forEach((data) {
+    for (var data in mappingMenuCategories) {
       if (getCachedMenuCategories.isEmpty) {
-        dao.insertMenuCategories(data);
+        await dao.insertMenuCategories(data);
       } else {
-        dao.updateMenuCategoriesList(data);
-      }
-    });
-  }
-
-  @override
-  Future<void> syncTablesPassword() async {
-    print('sync is working');
-    final tablesPasswordFromFireStore =
-        await fireStoreService.getTablePasswords();
-    final getCachedTablesPassword = await dao.getCachedTablesPassword();
-
-    /// mapping fireStoreData to Database table
-    final mappingTablesPassword = tablesPasswordFromFireStore.map((data) =>
-        TablesPasswordDto.fromTablesPasswordResponse(tablesResponse: data));
-
-    /// if is tablesPassword table empty insert data to table else update existing data
-    for (var data in mappingTablesPassword) {
-      if (getCachedTablesPassword.isEmpty) {
-        dao.insertTablesPassword(data);
-      } else {
-        print('update is works');
-        dao.updateTablesPassword(data);
+        await dao.updateMenuCategoriesList(data);
       }
     }
   }
 
   @override
-  Future<FireStoreResult<List<MenuProductsListDto>>> getMenuListFromDb() async {
+  Future<void> syncTablesPassword() async {
+    final tablesPasswordFromFireStore =
+        await fireStoreService.getTablePasswords();
+    for (var it in tablesPasswordFromFireStore) {
+      // print(
+      //     '##### from fireStore #####${it.tablePassword} and ${it.tableNumber}');
+    }
+
+    final getCachedTablesPassword = await dao.getCachedTablesPassword();
+
+    final mappingTablesPassword = tablesPasswordFromFireStore.map((data) {
+      // print(
+      //     '!!!!! in mapping !!!!!${data.tablePassword} and ${data.tableNumber}');
+      return TablesPasswordDto.fromTablesPasswordResponse(tablesResponse: data);
+    });
+
+    /// if is tablesPassword table empty insert data to table else update existing data
+    for (var data in mappingTablesPassword) {
+      if (getCachedTablesPassword.isEmpty) {
+        await dao.insertTablesPassword(data);
+      } else if (getCachedTablesPassword.isNotEmpty) {
+        print('update is works');
+        await dao.updateTablesPassword(data);
+      }
+    }
+  }
+
+  @override
+  Future<Result<List<MenuProductsListDto>>> getMenuListFromDb() async {
     try {
       final getMenuProductsDto = await dao.getCachedMenuList();
       if (getMenuProductsDto.isNotEmpty) {
@@ -87,7 +93,7 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<FireStoreResult<List<TablesPasswordDto>>>
+  Future<Result<List<TablesPasswordDto>>>
       getTablesPasswordsFromDb() async {
     try {
       final getTablesPasswordDto = await dao.getCachedTablesPassword();
@@ -102,6 +108,10 @@ class RepositoryImpl extends Repository {
   }
 
   @override
+  Future<List<TablesPasswordDto>> getTablesPasswordsForChecking() async =>
+      await dao.getCachedTablesPassword();
+
+  @override
   Future<List<MenuCategoriesDto>> getMenuCategoriesFromDb() async {
     try {
       final getMenuCategoriesDto = await dao.getCachedMenuCategories();
@@ -114,4 +124,8 @@ class RepositoryImpl extends Repository {
       throw Exception(e.toString());
     }
   }
+
+  @override
+  Future<MenuProductsListDto> getSingleProductFromDb(int productId) async =>
+      await dao.getSingleMenuProduct(productId);
 }

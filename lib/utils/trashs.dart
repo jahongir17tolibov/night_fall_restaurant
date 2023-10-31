@@ -128,4 +128,15 @@
             ),
           ),
 *
+*
+*
+  final List<String> categories = [
+    'Milliy taomlar',
+    'Turk taomlari',
+    'Salatlar',
+    'Nonlar',
+    'Ichimliklar',
+  ];
+*
+*
 * */

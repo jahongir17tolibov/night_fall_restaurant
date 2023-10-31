@@ -1,17 +1,5 @@
 part of 'tables_bloc.dart';
 
-// enum TablesStatus { success, loading, validPassword }
-//
-// enum TablesError { error, inValidPassword }
-//
-// @immutable
-// class TablesState {
-//   final TablesStatus status;
-//   final TablesError? error;
-//
-//   const TablesState._({this.status = TablesStatus.loading, this.error});
-// }
-
 @immutable
 sealed class TablesState {}
 
@@ -29,20 +17,31 @@ class TablesSuccessState extends TablesState {
   }) : super();
 }
 
-class TablesValidPasswordState extends TablesState {
-  final String isValid;
-
-  TablesValidPasswordState(this.isValid) : super();
-}
-
-class TablesInValidPasswordState extends TablesState {
-  final String message;
-
-  TablesInValidPasswordState(this.message) : super();
-}
-
 class TablesErrorState extends TablesState {
   final String error;
 
   TablesErrorState({required this.error}) : super();
 }
+
+@immutable
+sealed class TablesActionState extends TablesState {}
+
+class TablesNavigateToHomeScreenActionState extends TablesActionState {}
+
+class TablesShowNumberPickerActionState extends TablesActionState {}
+
+class TablesShowChangeTableDialogActionState extends TablesActionState {}
+
+class TablesValidPasswordState extends TablesActionState {
+  final String isValid;
+
+  TablesValidPasswordState(this.isValid) : super();
+}
+
+class TablesInValidPasswordState extends TablesActionState {
+  final String message;
+
+  TablesInValidPasswordState(this.message) : super();
+}
+
+class TablesCheckAndSubmitActionState extends TablesActionState {}

@@ -3,16 +3,20 @@ import 'package:night_fall_restaurant/data/local/entities/menu_products_list_dto
 import 'package:night_fall_restaurant/data/local/entities/orders_entity.dart';
 import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
 
-import '../../../data/remote/fire_store_services/fire_store_result.dart';
+import '../../../core/result/result_handle.dart';
 
 abstract class Repository {
   Future<void> syncMenuProductsList();
 
-  Future<FireStoreResult<List<MenuProductsListDto>>> getMenuListFromDb();
+  Future<Result<List<MenuProductsListDto>>> getMenuListFromDb();
 
   Future<List<MenuCategoriesDto>> getMenuCategoriesFromDb();
 
   Future<void> syncTablesPassword();
 
-  Future<FireStoreResult<List<TablesPasswordDto>>> getTablesPasswordsFromDb();
+  Future<Result<List<TablesPasswordDto>>> getTablesPasswordsFromDb();
+
+  Future<List<TablesPasswordDto>> getTablesPasswordsForChecking();
+
+  Future<MenuProductsListDto> getSingleProductFromDb(int productId);
 }

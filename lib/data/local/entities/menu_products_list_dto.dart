@@ -1,4 +1,3 @@
-import 'package:night_fall_restaurant/data/remote/model/get_menu_list_response.dart';
 import 'package:night_fall_restaurant/data/remote/model/menu_list.dart';
 
 class MenuProductsListDto {
@@ -8,6 +7,7 @@ class MenuProductsListDto {
   final String price;
   final String weight;
   final String productCategoryId;
+  final bool isAddedToOrder;
 
   MenuProductsListDto({
     this.id,
@@ -16,6 +16,7 @@ class MenuProductsListDto {
     required this.price,
     required this.weight,
     required this.productCategoryId,
+    this.isAddedToOrder = false,
   });
 
   Map<String, dynamic> toMap() => <String, dynamic>{
@@ -25,6 +26,7 @@ class MenuProductsListDto {
         'price': price,
         'weight': weight,
         'productCategoryId': productCategoryId,
+        // 'isAddedToOrder': isAddedToOrder,
       };
 
   factory MenuProductsListDto.fromMap(Map<String, dynamic> map) =>
@@ -35,6 +37,7 @@ class MenuProductsListDto {
         price: map['price'],
         weight: map['weight'],
         productCategoryId: map['productCategoryId'],
+        // isAddedToOrder: map['isAddedToOrder'],
       );
 
   factory MenuProductsListDto.fromMenuProductsListResponse({
@@ -48,6 +51,25 @@ class MenuProductsListDto {
         productCategoryId: menuList.product_category_id,
       );
 
+  MenuProductsListDto copyWith({
+    int? id,
+    required String? name,
+    required String? image,
+    required String? price,
+    required String? weight,
+    required String? productCategoryId,
+    required bool? isAddedToOrder,
+  }) =>
+      MenuProductsListDto(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        image: image ?? this.image,
+        price: price ?? this.price,
+        weight: weight ?? this.weight,
+        productCategoryId: productCategoryId ?? this.productCategoryId,
+        isAddedToOrder: isAddedToOrder ?? this.isAddedToOrder,
+      );
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -58,6 +80,7 @@ class MenuProductsListDto {
           image == other.image &&
           price == other.price &&
           weight == other.weight &&
+          isAddedToOrder == other.isAddedToOrder &&
           productCategoryId == other.productCategoryId;
 
   @override
@@ -67,5 +90,6 @@ class MenuProductsListDto {
       image.hashCode ^
       price.hashCode ^
       weight.hashCode ^
-      productCategoryId.hashCode;
+      productCategoryId.hashCode ^
+      isAddedToOrder.hashCode;
 }

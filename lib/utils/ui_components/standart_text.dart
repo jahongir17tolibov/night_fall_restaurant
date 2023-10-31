@@ -15,6 +15,7 @@ Text TextView({
         color: textColor,
         fontFamily: 'Ktwod',
         fontWeight: weight,
+        overflow: TextOverflow.ellipsis,
       ),
       maxLines: maxLines,
     );

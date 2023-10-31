@@ -31,6 +31,13 @@ class DataBaseService {
     });
   }
 
+  Future<void> createTablePasswordsTable(sql.Database database) async =>
+      await database.execute("CREATE TABLE $tablesPasswordsTableName("
+          "id $idType,"
+          "tableNumber $intType,"
+          "tablePassword $stringType"
+          ")");
+
   Future<void> createMenuProductsTable(sql.Database database) async =>
       await database.execute("CREATE TABLE $menuProductsTableName("
           "id $idType,"
@@ -48,20 +55,15 @@ class DataBaseService {
           "categoryId $stringType"
           ")");
 
-  Future<void> createTablePasswordsTable(sql.Database database) async =>
-      await database.execute("CREATE TABLE $tablesPasswordsTableName("
-          "id $idType,"
-          "tableNumber $intType,"
-          "tablePassword $stringType"
-          ")");
-
   Future<void> createOrdersTable(sql.Database database) async =>
       await database.execute("CREATE TABLE $ordersTableName("
           "id $idType,"
-          "name $stringType,"
-          "image $stringType,"
-          "price $stringType,"
-          "productCategoryId $stringType,"
-          "quantity $intType"
+          "productCategoryId $stringType, "
+          "orderProductId $stringType, "
+          "name $stringType, "
+          "image $stringType, "
+          "price $stringType, "
+          "weight $stringType, "
+          "quantity $intType "
           ")");
 }

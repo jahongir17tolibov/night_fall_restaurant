@@ -17,9 +17,8 @@ class RouterNavigation {
         return MaterialPageRoute(builder: (_) => const MainTableScreen());
       case homeRoute:
         {
-          final String tableNumberArgument = routeSettings.arguments as String;
-          return MaterialPageRoute(
-              builder: (_) => HomeScreen(tableNumber: tableNumberArgument));
+          // final String tableNumberArgument = routeSettings.arguments as String;
+          return MaterialPageRoute(builder: (_) => const HomeScreen());
         }
 
       case ordersRoute:

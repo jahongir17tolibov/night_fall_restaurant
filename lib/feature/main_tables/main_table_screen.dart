@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:night_fall_restaurant/feature/main_tables/bloc/tables_bloc.dart';
 import 'package:night_fall_restaurant/utils/constants.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
-import 'package:night_fall_restaurant/utils/ui_components/cupertino_error_dialog.dart';
-import 'package:night_fall_restaurant/utils/ui_components/cupertino_loading_dialog.dart';
+import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
 import 'package:night_fall_restaurant/utils/ui_components/scale_on_press_button.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../utils/ui_components/show_snack_bar.dart';
 import '../../utils/ui_components/standart_text.dart';
@@ -25,7 +25,7 @@ class _MainTableScreenState extends State<MainTableScreen>
   TextEditingController textEditingController = TextEditingController();
   static const double kItemExtent = 32;
 
-  final List<String> _tableNumbers = [];
+  final List<String> _tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8'];
   int _selectedNumber = 0;
 
   @override
@@ -47,6 +47,7 @@ class _MainTableScreenState extends State<MainTableScreen>
 
   @override
   Widget build(BuildContext context) {
+    print("$_tableNumbers and $_selectedNumber");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -63,6 +64,8 @@ class _MainTableScreenState extends State<MainTableScreen>
         ],
       ),
       body: BlocConsumer<TablesBloc, TablesState>(
+        buildWhen: (previous, current) => current is! TablesActionState,
+        listenWhen: (previous, current) => current is TablesActionState,
         builder: (context, state) {
           if (state is TablesSuccessState) {
             return Column(
@@ -95,14 +98,14 @@ class _MainTableScreenState extends State<MainTableScreen>
                         onPressed: () {
                           setState(() {
                             _selectedNumber = int.parse(state.tableNumber) - 1;
-                            print(state.tablePasswords);
-                            _tableNumbers.clear();
-                            for (var element in state.tablePasswords) {
-                              print(element);
-                              _tableNumbers.add(element.tableNumber.toString());
-                            }
                           });
-                          _showChangeTableDialog();
+                          // _tableNumbers.clear();
+                          // for (var element in state.tablePasswords) {
+                          //   _tableNumbers.add(element.tableNumber.toString());
+                          // }
+                          context
+                              .read<TablesBloc>()
+                              .add(TablesOnShowChangeTableDialogEvent());
                         },
                       ),
                       // TABLE NUMBER BUTTON with scale on press animation
@@ -116,12 +119,11 @@ class _MainTableScreenState extends State<MainTableScreen>
                       padding: const EdgeInsets.only(bottom: 20.0),
                       child: scaleOnPress(
                         child: ElevatedButton(
-                          onPressed: () async {
+                          onPressed: () {
                             FocusScope.of(context).unfocus();
-                            await Navigator.of(context).pushReplacementNamed(
-                              homeRoute,
-                              arguments: state.tableNumber,
-                            );
+                            context
+                                .read<TablesBloc>()
+                                .add(TablesOnNavigateToHomeScreenEvent());
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
@@ -169,97 +171,85 @@ class _MainTableScreenState extends State<MainTableScreen>
               radius: 20.0,
             ));
           } else if (state is TablesErrorState) {
-            return Center(
-              child: Text(
-                state.error,
-                style: TextStyle(
-                  fontSize: 17.0,
-                  fontFamily: 'Ktwod',
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            );
+            return errorWidget(state.error, context);
           }
           return Container();
         },
         listener: (BuildContext context, TablesState state) {
+          if (state is TablesShowNumberPickerActionState) {
+            _showPopUp(
+              CupertinoPicker(
+                magnification: 1.5,
+                squeeze: 1.2,
+                useMagnifier: true,
+                itemExtent: kItemExtent,
+                scrollController: FixedExtentScrollController(
+                  initialItem: _selectedNumber,
+                ),
+                onSelectedItemChanged: (selectedItem) {
+                  setState(() {
+                    _selectedNumber = selectedItem;
+                  });
+                  print(_selectedNumber);
+                },
+                children: List<Widget>.generate(
+                  _tableNumbers.length,
+                  (index) => Center(child: Text(_tableNumbers[index])),
+                ),
+              ),
+            );
+          }
+          if (state is TablesNavigateToHomeScreenActionState) {
+            Navigator.of(context).pushNamed(homeRoute);
+          }
           if (state is TablesValidPasswordState) {
             showSnackBar(state.isValid, context);
           } else if (state is TablesInValidPasswordState) {
             showSnackBar(state.message, context);
+          }
+          if (state is TablesShowChangeTableDialogActionState) {
+            showCupertinoDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (_) => _textFieldDialog(),
+            );
           }
         },
       ),
     );
   }
 
-  void _showChangeTableDialog() {
-    showAdaptiveDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => SafeArea(child: _textFieldDialog()),
-    );
-  }
-
   Widget _textFieldDialog() => CupertinoAlertDialog(
-        title: Text(
-          'Change the table number',
-          style: TextStyle(
-            fontFamily: 'Ktwod',
-            color: Theme.of(context).colorScheme.onBackground,
-          ),
+        title: TextView(
+          text: 'Change the table number',
+          textColor: Theme.of(context).colorScheme.onBackground,
         ),
         content: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const SizedBox(height: 10.0),
-            Text(
-              'Table number: ${_tableNumbers[_selectedNumber]}',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontFamily: 'Ktwod',
-                color: Theme.of(context).colorScheme.onBackground,
-              ),
+            TextView(
+              text: 'Table number: ${_tableNumbers[_selectedNumber]}',
+              textSize: 20.0,
+              textColor: Theme.of(context).colorScheme.onBackground,
             ),
             const SizedBox(height: 16.0),
-            _buildCupertinoTextField(
-              hintText: 'Enter the password',
-              context: context,
-            ),
+
+            /// textField
+            _buildCupertinoTextField(hintText: 'Enter the password'),
           ],
         ),
         actions: [
           // for change table number with numberPicker
           CupertinoDialogAction(
             onPressed: () {
-              _showPopUp(
-                CupertinoPicker(
-                  itemExtent: kItemExtent,
-                  magnification: 1.5,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  scrollController:
-                      FixedExtentScrollController(initialItem: _selectedNumber),
-                  onSelectedItemChanged: (selectedItem) {
-                    setState(() {
-                      _selectedNumber = selectedItem;
-                    });
-                  },
-                  children: List<Widget>.generate(
-                    _tableNumbers.length,
-                    (index) => Center(child: Text(_tableNumbers[index])),
-                  ),
-                ),
-              );
+              context.read<TablesBloc>().add(TablesOnShowNumberPickerEvent());
             },
-            child: Text(
-              'CHANGE TABLE',
-              style: TextStyle(
-                fontSize: 12.0,
-                fontFamily: 'Ktwod',
-                color: Theme.of(context).colorScheme.primary,
-              ),
+            child: TextView(
+              text: 'CHANGE TABLE',
+              textSize: 12.0,
+              textColor: Theme.of(context).colorScheme.primary,
             ),
           ),
           // it's done, we can click ok
@@ -268,20 +258,20 @@ class _MainTableScreenState extends State<MainTableScreen>
               if (textEditingController.text.length < 8) {
                 showSnackBar(passLengthText, context);
               } else {
+                print(
+                    '${_tableNumbers[_selectedNumber]} and ${textEditingController.text}');
                 context.read<TablesBloc>().add(TablesOnPasswordSubmitEvent(
                       tableNumber: _tableNumbers[_selectedNumber],
                       password: textEditingController.text,
                     ));
                 Navigator.of(context).pop();
+                context.read<TablesBloc>().add(TablesOnGetPasswordsEvent());
               }
             },
-            child: Text(
-              'OK',
-              style: TextStyle(
-                fontSize: 12.0,
-                fontFamily: 'Ktwod',
-                color: Theme.of(context).colorScheme.primary,
-              ),
+            child: TextView(
+              text: 'OK',
+              textSize: 12.0,
+              textColor: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -289,7 +279,6 @@ class _MainTableScreenState extends State<MainTableScreen>
 
   Widget _buildCupertinoTextField({
     required String hintText,
-    required BuildContext context,
   }) =>
       SizedBox(
         width: fillMaxWidth(context),
@@ -301,7 +290,7 @@ class _MainTableScreenState extends State<MainTableScreen>
           textInputAction: TextInputAction.done,
           cursorColor: Theme.of(context).colorScheme.secondary,
           cursorOpacityAnimates: true,
-          maxLength: 12,
+          maxLength: 8,
           maxLines: 1,
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -314,8 +303,7 @@ class _MainTableScreenState extends State<MainTableScreen>
       );
 
   void _showPopUp(Widget child) {
-    showCupertinoModalPopup(
-      barrierDismissible: true,
+    showCupertinoModalPopup<void>(
       context: context,
       builder: (BuildContext context) => Container(
         height: 200,

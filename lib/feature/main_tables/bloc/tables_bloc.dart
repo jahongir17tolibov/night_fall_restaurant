@@ -3,14 +3,13 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:meta/meta.dart';
+import 'package:night_fall_restaurant/core/result/result_handle.dart';
 import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
-import 'package:night_fall_restaurant/data/remote/fire_store_services/fire_store_result.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_tables_password_use_case.dart';
 
 import '../../../data/shared/shared_preferences.dart';
+import '../../../domain/use_cases/get_tables_password_for_checking_use_case.dart';
 import '../../../domain/use_cases/tables_password_use_case.dart';
-import '../../../utils/ui_components/show_snack_bar.dart';
 
 part 'tables_event.dart';
 
@@ -19,31 +18,25 @@ part 'tables_state.dart';
 class TablesBloc extends Bloc<TablesEvent, TablesState> {
   final SyncTablesPasswordUseCase syncTablesPasswordUseCase;
   final TablesPasswordUseCase tablesPasswordUseCase;
+  final GetTablesPasswordForCheckingUseCase forChecking;
   final AppSharedPreferences sharedPreferences;
 
   TablesBloc({
     required this.tablesPasswordUseCase,
     required this.syncTablesPasswordUseCase,
+    required this.forChecking,
     required this.sharedPreferences,
   }) : super(TablesLoadingState()) {
     on<TablesOnGetPasswordsEvent>(getTablesPassword);
 
     on<TablesOnPasswordSubmitEvent>(passwordSubmitEvent);
-  }
-  //
-  // TextEditingController controller = TextEditingController();
 
-  // Future<void> onChangeTextField(
-  //   TablesOnChangeTextFieldEvent event,
-  //   Emitter<TablesState> emit,
-  // ) async {
-  //   if (controller.text.length > 12) {
-  //     showSnackBar(
-  //       'the length of the password should not be less than 12 characters',
-  //       event.context,
-  //     );
-  //   }
-  // }
+    on<TablesOnNavigateToHomeScreenEvent>(navigateToHomeEvent);
+
+    on<TablesOnShowNumberPickerEvent>(showNumberPickerEvent);
+
+    on<TablesOnShowChangeTableDialogEvent>(showChangeTableDialogEvent);
+  }
 
   Future<void> getTablesPassword(
     TablesOnGetPasswordsEvent event,
@@ -83,45 +76,49 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     }
   }
 
+  Future<void> navigateToHomeEvent(
+    TablesOnNavigateToHomeScreenEvent event,
+    Emitter<TablesState> emit,
+  ) async {
+    emit(TablesNavigateToHomeScreenActionState());
+  }
+
+  Future<void> showNumberPickerEvent(
+    TablesOnShowNumberPickerEvent event,
+    Emitter<TablesState> emit,
+  ) async {
+    emit(TablesShowNumberPickerActionState());
+  }
+
+  Future<void> showChangeTableDialogEvent(
+    TablesOnShowChangeTableDialogEvent event,
+    Emitter<TablesState> emit,
+  ) async {
+    emit(TablesShowChangeTableDialogActionState());
+  }
+
   Future<void> passwordSubmitEvent(
     TablesOnPasswordSubmitEvent event,
     Emitter<TablesState> emit,
   ) async {
-    final tablesData = await tablesPasswordUseCase.call();
-    switch (tablesData) {
-      case SUCCESS():
-        {
-          final isValid = checkPasswords(
-            tablesData.data,
-            event.tableNumber,
-            event.password,
-          );
-          final getNewTablesNumber = await sharedPreferences.getTableNumber();
-          if (isValid) {
-            emit(TablesValidPasswordState(
-              'Valid password and $getNewTablesNumber',
-            ));
-            // get new value from sharedPrefs
-            emit(TablesSuccessState(
-              tablePasswords: tablesData.data,
-              tableNumber: getNewTablesNumber.toString(),
-            ));
-          } else {
-            emit(TablesInValidPasswordState(
-              "Invalid table number or password, try again!",
-            ));
-            // get old value from sharedPrefs
-            emit(TablesSuccessState(
-              tablePasswords: tablesData.data,
-              tableNumber: getNewTablesNumber.toString(),
-            ));
-          }
-        }
-        break;
+    final tablesData = await forChecking.call();
+    final getNewTablesNumber = await sharedPreferences.getTableNumber();
 
-      case FAILURE():
-        emit(TablesErrorState(error: tablesData.exception.toString()));
-        break;
+    /// checking password
+    final isValid = checkPasswords(
+      tablesData,
+      event.tableNumber,
+      event.password,
+    );
+
+    if (isValid) {
+      emit(TablesValidPasswordState(
+        'Valid password and $getNewTablesNumber',
+      ));
+    } else {
+      emit(TablesInValidPasswordState(
+        "Invalid table number or password, try again!",
+      ));
     }
   }
 
@@ -131,7 +128,8 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     String tablePassword,
   ) {
     for (var it in tablesData) {
-      print('${it.tableNumber} and ${it.tablePassword} and $tablePassword and $tableNumber');
+      // print(
+      //     '${it.tableNumber} and ${it.tablePassword} and $tablePassword and $tableNumber');
       if (it.tableNumber.toString() == tableNumber &&
           it.tablePassword == tablePassword) {
         sharedPreferences.setTableNumber(it.tableNumber);

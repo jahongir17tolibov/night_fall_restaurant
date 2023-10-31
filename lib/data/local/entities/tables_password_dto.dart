@@ -26,11 +26,12 @@ class TablesPasswordDto {
 
   factory TablesPasswordDto.fromTablesPasswordResponse({
     required ChangeTableModelResponse tablesResponse,
-  }) =>
-      TablesPasswordDto(
-        tableNumber: tablesResponse.tableNumber,
-        tablePassword: tablesResponse.tablePassword,
-      );
+  }) {
+    return TablesPasswordDto(
+      tableNumber: tablesResponse.tableNumber,
+      tablePassword: tablesResponse.tablePassword,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>

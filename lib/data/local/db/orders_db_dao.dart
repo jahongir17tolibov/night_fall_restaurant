@@ -23,11 +23,12 @@ class OrdersDao {
     }
   }
 
-  Future<void> deleteProductFromOrders(int productId) async {
+  Future<void> deleteProductFromOrders(String orderProductId) async {
     final database = await myDatabase.getDb();
     try {
       await database.rawDelete(
-        "DELETE FROM $tableName WHERE id = '$productId'",
+        "DELETE FROM $tableName WHERE orderProductId = ?",
+        [orderProductId],
       );
     } catch (_) {
       rethrow;
@@ -39,6 +40,39 @@ class OrdersDao {
     try {
       final List<Map<String, dynamic>> query = await database.query(tableName);
       return query.map((e) => OrdersEntity.fromMap(e)).toList();
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  Future<OrdersEntity> getSingleOrderProduct(int orderId) async {
+    final database = await myDatabase.getDb();
+    try {
+      final List<Map<String, dynamic>> query = await database.rawQuery(
+        "SELECT * FROM $tableName where id = $orderId",
+      );
+      if (query.isNotEmpty) {
+        return OrdersEntity.fromMap(query.first);
+      } else {
+        throw Exception('orders data is Empty');
+      }
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  Future<String?> getSingleOrdersProductId(String orderProductId) async {
+    final database = await myDatabase.getDb();
+    const String getIdSqlQuery =
+        "SELECT orderProductId FROM $tableName WHERE orderProductId = ?";
+    try {
+      final List<Map<String, dynamic>> query =
+          await database.rawQuery(getIdSqlQuery, [orderProductId]);
+      if (query.isNotEmpty) {
+        return query.first['orderProductId'];
+      } else {
+        return null;
+      }
     } catch (_) {
       rethrow;
     }

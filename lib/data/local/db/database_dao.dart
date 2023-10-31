@@ -11,6 +11,8 @@ class DataBaseDao {
 
   DataBaseDao(this.myDatabase);
 
+  /// insert operations
+
   Future<void> insertMenuProductsList(MenuProductsListDto menuList) async =>
       await insertToDatabaseHelper(
         menuProductsTableName,
@@ -28,6 +30,8 @@ class DataBaseDao {
         tablesPasswordsTableName,
         tablesPassword.toMap(),
       );
+
+  /// get operations
 
   Future<List<MenuProductsListDto>> getCachedMenuList() async {
     final List<Map<String, dynamic>> query = await getFromDatabaseHelper(
@@ -53,28 +57,75 @@ class DataBaseDao {
     return query.map((e) => TablesPasswordDto.fromMap(e)).toList();
   }
 
-  Future<void> updateMenuProductsList(MenuProductsListDto menuList) async =>
-      updateTableFromDataBaseHelper(
-        tableName: menuProductsTableName,
-        dataValues: menuList.toMap(),
-        whereArguments: [menuList.id],
+  Future<MenuProductsListDto> getSingleMenuProduct(int productId) async {
+    final database = await myDatabase.getDb();
+    try {
+      final List<Map<String, dynamic>> query = await database.rawQuery(
+        "SELECT * FROM $menuProductsTableName where id = $productId",
       );
+      if (query.isNotEmpty) {
+        return MenuProductsListDto.fromMap(query.first);
+      } else {
+        throw Exception('menu product data is Empty');
+      }
+    } catch (_) {
+      rethrow;
+    }
+  }
 
-  Future<void> updateMenuCategoriesList(MenuCategoriesDto categories) async =>
-      updateTableFromDataBaseHelper(
-        tableName: menuCategoriesTableName,
-        dataValues: categories.toMap(),
-        whereArguments: [categories.id],
-      );
+  /// update operations
 
-  Future<void> updateTablesPassword(TablesPasswordDto tablesPasswords) async =>
-      updateTableFromDataBaseHelper(
-        tableName: tablesPasswordsTableName,
-        dataValues: tablesPasswords.toMap(),
-        whereArguments: [tablesPasswords.id],
-      );
+  Future<void> updateMenuProductsList(MenuProductsListDto menuList) async {
+    final database = await myDatabase.getDb();
+    const sqlQuery = """UPDATE $menuProductsTableName 
+        SET name = ?, price = ?, image = ?, weight = ?, productCategoryId = ? WHERE id = ?""";
+    try {
+      await database.rawUpdate(sqlQuery, [
+        menuList.name,
+        menuList.price,
+        menuList.image,
+        menuList.weight,
+        menuList.productCategoryId,
+        menuList.id
+      ]);
+    } catch (_) {
+      rethrow;
+    }
+  }
 
-  // helper for insert data to database
+  Future<void> updateMenuCategoriesList(MenuCategoriesDto categories) async {
+    final database = await myDatabase.getDb();
+    const sqlQuery = """UPDATE $menuCategoriesTableName 
+        SET categoryName = ?, categoryId = ? WHERE id = ?""";
+    try {
+      await database.rawUpdate(sqlQuery, [
+        categories.categoryName,
+        categories.categoryId,
+        categories.id,
+      ]);
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateTablesPassword(TablesPasswordDto tablesPasswords) async {
+    final database = await myDatabase.getDb();
+    const sqlQuery = """UPDATE $tablesPasswordsTableName 
+        SET tableNumber = ?, tablePassword = ? WHERE id = ?""";
+    try {
+      print('^^^^^^^^^^${tablesPasswords.tablePassword} and ${tablesPasswords.tableNumber}');
+      await database.rawQuery(sqlQuery, [
+        tablesPasswords.tableNumber,
+        tablesPasswords.tablePassword,
+        tablesPasswords.id,
+      ]);
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  /// helper for insert data to database
+
   Future<void> insertToDatabaseHelper(
     String tableName,
     Map<String, dynamic> dataValues,
@@ -99,26 +150,6 @@ class DataBaseDao {
     final database = await myDatabase.getDb();
     try {
       return await database.query(tableName, orderBy: orderBy);
-    } catch (_) {
-      rethrow;
-    }
-  }
-
-  // helper for update data in database
-  Future<void> updateTableFromDataBaseHelper({
-    required String tableName,
-    required Map<String, dynamic> dataValues,
-    required List<dynamic> whereArguments,
-  }) async {
-    final database = await myDatabase.getDb();
-    try {
-      await database.update(
-        tableName,
-        dataValues,
-        where: 'id = ?',
-        whereArgs: whereArguments,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
     } catch (_) {
       rethrow;
     }

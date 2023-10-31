@@ -20,8 +20,20 @@ class HomeErrorState extends HomeState {
   HomeErrorState({required this.error});
 }
 
-class ThemeState extends HomeState {
-  final ThemeData isDark;
+sealed class HomeActionState extends HomeState {}
 
-  ThemeState(this.isDark);
+class HomeNavigateBackActionState extends HomeActionState {}
+
+class HomeNavigateToOrdersScreenState extends HomeActionState {}
+
+class HomeListenInsertToOrderActionState extends HomeActionState {
+  final String message;
+
+  HomeListenInsertToOrderActionState(this.message);
+}
+
+class HomeListenDeleteFromOrderActionState extends HomeActionState {
+  final String message;
+
+  HomeListenDeleteFromOrderActionState(this.message);
 }
