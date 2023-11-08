@@ -8,8 +8,8 @@ class HomeLoadingState extends HomeState {
 }
 
 class HomeSuccessState extends HomeState {
-  final List<MenuProductsListDto> response;
-  final List<MenuCategoriesDto> menuCategories;
+  final List<MenuProductsEntity> response;
+  final List<MenuCategoriesEntity> menuCategories;
 
   HomeSuccessState({required this.response, required this.menuCategories});
 }
@@ -20,20 +20,15 @@ class HomeErrorState extends HomeState {
   HomeErrorState({required this.error});
 }
 
+@immutable
 sealed class HomeActionState extends HomeState {}
 
 class HomeNavigateBackActionState extends HomeActionState {}
 
 class HomeNavigateToOrdersScreenState extends HomeActionState {}
 
-class HomeListenInsertToOrderActionState extends HomeActionState {
+class HomeShowSnackMessageActionState extends HomeActionState {
   final String message;
 
-  HomeListenInsertToOrderActionState(this.message);
-}
-
-class HomeListenDeleteFromOrderActionState extends HomeActionState {
-  final String message;
-
-  HomeListenDeleteFromOrderActionState(this.message);
+  HomeShowSnackMessageActionState(this.message);
 }

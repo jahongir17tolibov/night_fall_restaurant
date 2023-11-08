@@ -1,27 +1,23 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/main_tables/main_table_screen.dart';
 import 'package:night_fall_restaurant/feature/orders/orders_screen.dart';
 import 'package:night_fall_restaurant/feature/splash/splash_screen.dart';
-import 'package:night_fall_restaurant/main.dart';
-
-import '../../utils/constants.dart';
 
 class RouterNavigation {
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
-      case splashRoute:
+      case SplashScreen.splashRoute:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
-      case tableRoute:
+      case MainTableScreen.tablesRoute:
         return MaterialPageRoute(builder: (_) => const MainTableScreen());
-      case homeRoute:
+      case HomeScreen.ROUTE_NAME:
         {
           // final String tableNumberArgument = routeSettings.arguments as String;
           return MaterialPageRoute(builder: (_) => const HomeScreen());
         }
 
-      case ordersRoute:
+      case OrdersScreen.ROUTE_NAME:
         return MaterialPageRoute(builder: (_) => const OrdersScreen());
       default:
         return MaterialPageRoute(

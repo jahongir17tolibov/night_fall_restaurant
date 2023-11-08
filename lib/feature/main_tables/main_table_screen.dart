@@ -1,18 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/main_tables/bloc/tables_bloc.dart';
 import 'package:night_fall_restaurant/utils/constants.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
 import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
 import 'package:night_fall_restaurant/utils/ui_components/scale_on_press_button.dart';
-import 'package:rxdart/rxdart.dart';
 
 import '../../utils/ui_components/show_snack_bar.dart';
 import '../../utils/ui_components/standart_text.dart';
 
 class MainTableScreen extends StatefulWidget {
+  static const String tablesRoute = "/tables";
+
   const MainTableScreen({super.key});
+
+  static Future<void> open(BuildContext context) async {
+    await Navigator.of(context).popAndPushNamed(tablesRoute);
+  }
 
   @override
   State<StatefulWidget> createState() => _MainTableScreenState();
@@ -176,31 +182,8 @@ class _MainTableScreenState extends State<MainTableScreen>
           return Container();
         },
         listener: (BuildContext context, TablesState state) {
-          if (state is TablesShowNumberPickerActionState) {
-            _showPopUp(
-              CupertinoPicker(
-                magnification: 1.5,
-                squeeze: 1.2,
-                useMagnifier: true,
-                itemExtent: kItemExtent,
-                scrollController: FixedExtentScrollController(
-                  initialItem: _selectedNumber,
-                ),
-                onSelectedItemChanged: (selectedItem) {
-                  setState(() {
-                    _selectedNumber = selectedItem;
-                  });
-                  print(_selectedNumber);
-                },
-                children: List<Widget>.generate(
-                  _tableNumbers.length,
-                  (index) => Center(child: Text(_tableNumbers[index])),
-                ),
-              ),
-            );
-          }
           if (state is TablesNavigateToHomeScreenActionState) {
-            Navigator.of(context).pushNamed(homeRoute);
+            HomeScreen.open(context);
           }
           if (state is TablesValidPasswordState) {
             showSnackBar(state.isValid, context);
@@ -244,7 +227,25 @@ class _MainTableScreenState extends State<MainTableScreen>
           // for change table number with numberPicker
           CupertinoDialogAction(
             onPressed: () {
-              context.read<TablesBloc>().add(TablesOnShowNumberPickerEvent());
+              _showPopUp(CupertinoPicker(
+                magnification: 1.5,
+                squeeze: 1.2,
+                useMagnifier: true,
+                itemExtent: kItemExtent,
+                scrollController: FixedExtentScrollController(
+                  initialItem: _selectedNumber,
+                ),
+                onSelectedItemChanged: (selectedItem) {
+                  setState(() {
+                    _selectedNumber = selectedItem;
+                  });
+                  print(_selectedNumber);
+                },
+                children: List<Widget>.generate(
+                  _tableNumbers.length,
+                  (index) => Center(child: Text(_tableNumbers[index])),
+                ),
+              ));
             },
             child: TextView(
               text: 'CHANGE TABLE',

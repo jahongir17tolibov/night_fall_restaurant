@@ -8,7 +8,7 @@ class TablesLoadingState extends TablesState {
 }
 
 class TablesSuccessState extends TablesState {
-  final List<TablesPasswordDto> tablePasswords;
+  final List<TablePasswordsEntity> tablePasswords;
   final String tableNumber;
 
   TablesSuccessState({
@@ -27,8 +27,6 @@ class TablesErrorState extends TablesState {
 sealed class TablesActionState extends TablesState {}
 
 class TablesNavigateToHomeScreenActionState extends TablesActionState {}
-
-class TablesShowNumberPickerActionState extends TablesActionState {}
 
 class TablesShowChangeTableDialogActionState extends TablesActionState {}
 

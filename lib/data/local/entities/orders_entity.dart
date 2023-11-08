@@ -1,6 +1,17 @@
-import 'package:night_fall_restaurant/data/local/entities/menu_products_list_dto.dart';
+// ignore_for_file: constant_identifier_names
+
+import 'package:night_fall_restaurant/data/local/entities/menu_products_list_entity.dart';
 
 class OrdersEntity {
+  static const CM_ID = "orders_entity_id";
+  static const CM_PRODUCT_CATEGORY_ID = "product_category_id";
+  static const CM_ORDER_PRODUCT_ID = "order_product_id";
+  static const CM_ORDER_NAME = "order_name";
+  static const CM_IMAGE = "order_image";
+  static const CM_PRICE = "order_price";
+  static const CM_WEIGHT = "order_weight";
+  static const TABLE_NAME = "orders_entity";
+
   final int? id;
   final String productCategoryId;
   final String orderProductId;
@@ -8,7 +19,6 @@ class OrdersEntity {
   final String image;
   final String price;
   final String weight;
-  int quantity;
 
   OrdersEntity({
     this.id,
@@ -18,33 +28,30 @@ class OrdersEntity {
     required this.image,
     required this.price,
     required this.weight,
-    this.quantity = 1,
   });
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'productCategoryId': productCategoryId,
-        'orderProductId': orderProductId,
-        'name': name,
-        'image': image,
-        'price': price,
-        'weight': weight,
-        'quantity': quantity,
+        CM_ID: id,
+        CM_PRODUCT_CATEGORY_ID: productCategoryId,
+        CM_ORDER_PRODUCT_ID: orderProductId,
+        CM_ORDER_NAME: name,
+        CM_IMAGE: image,
+        CM_PRICE: price,
+        CM_WEIGHT: weight,
       };
 
   factory OrdersEntity.fromMap(Map<String, dynamic> map) => OrdersEntity(
-        id: map['id'],
-        productCategoryId: map['productCategoryId'],
-        orderProductId: map['orderProductId'],
-        name: map['name'],
-        image: map['image'],
-        price: map['price'],
-        weight: map['weight'],
-        quantity: map['quantity'],
+        id: map[CM_ID],
+        productCategoryId: map[CM_PRODUCT_CATEGORY_ID],
+        orderProductId: map[CM_ORDER_PRODUCT_ID],
+        name: map[CM_ORDER_NAME],
+        image: map[CM_IMAGE],
+        price: map[CM_PRICE],
+        weight: map[CM_WEIGHT],
       );
 
   factory OrdersEntity.fromMenuProductsListDto({
-    required MenuProductsListDto menuProductsList,
+    required MenuProductsEntity menuProductsList,
   }) =>
       OrdersEntity(
         productCategoryId: menuProductsList.productCategoryId,
@@ -53,7 +60,6 @@ class OrdersEntity {
         image: menuProductsList.image,
         price: menuProductsList.price,
         weight: menuProductsList.weight,
-        quantity: 1,
       );
 
   @override
@@ -67,8 +73,7 @@ class OrdersEntity {
           name == other.name &&
           image == other.image &&
           price == other.price &&
-          weight == other.weight &&
-          quantity == other.quantity;
+          weight == other.weight;
 
   @override
   int get hashCode =>
@@ -78,6 +83,5 @@ class OrdersEntity {
       name.hashCode ^
       image.hashCode ^
       price.hashCode ^
-      weight.hashCode ^
-      quantity.hashCode;
+      weight.hashCode;
 }

@@ -1,14 +1,13 @@
 import 'package:flutter/cupertino.dart';
-import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
-
-import '../repository/main_repository/repository.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/tables_password_dao.dart';
+import 'package:night_fall_restaurant/data/local/entities/table_passwords_entity.dart';
 
 @immutable
 class GetTablesPasswordForCheckingUseCase {
-  final Repository repository;
+  final TablesPasswordDao dao;
 
-  const GetTablesPasswordForCheckingUseCase(this.repository);
+  const GetTablesPasswordForCheckingUseCase(this.dao);
 
-  Future<List<TablesPasswordDto>> call() async =>
-      await repository.getTablesPasswordsForChecking();
+  Future<List<TablePasswordsEntity>> call() async =>
+      await dao.getCachedTablesPassword();
 }

@@ -1,15 +1,18 @@
 import 'package:get_it/get_it.dart';
+import 'package:night_fall_restaurant/domain/use_cases/get_menu_products_use_case.dart';
+import 'package:night_fall_restaurant/domain/use_cases/get_order_products_use_case.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:night_fall_restaurant/core/theme/theme_manager.dart';
-import 'package:night_fall_restaurant/data/local/db/database_dao.dart';
-import 'package:night_fall_restaurant/data/local/db/database_service.dart';
-import 'package:night_fall_restaurant/data/local/db/orders_db_dao.dart';
+import 'package:night_fall_restaurant/data/local/db/app_database.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/menu_products_dao.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/orders_db_dao.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/tables_password_dao.dart';
 import 'package:night_fall_restaurant/data/remote/fire_store_services/fire_store_service_impl.dart';
 import 'package:night_fall_restaurant/data/shared/shared_preferences.dart';
-import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository_impl.dart';
 import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository.dart';
+import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository_impl.dart';
 import 'package:night_fall_restaurant/domain/use_cases/get_menu_categories_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/get_single_product_use_case.dart';
-import 'package:night_fall_restaurant/domain/use_cases/send_orders_to_fire_store_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/send_orders_to_fire_store_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_menu_products_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_tables_password_use_case.dart';
@@ -35,6 +38,8 @@ Future<void> setupDependencies() async {
         getSingleProductUseCase: getIt<GetSingleProductUseCase>(),
         sharedPreferences: getIt<AppSharedPreferences>(),
         ordersRepository: getIt<OrdersRepository>(),
+        getOrderProductsUseCase: getIt<GetOrderProductsUseCase>(),
+        getMenuProductsUseCase: getIt<GetMenuProductsUseCase>(),
       ));
 
   getIt.registerFactory<TablesBloc>(() => TablesBloc(
@@ -51,7 +56,10 @@ Future<void> setupDependencies() async {
 
   /// repository
   getIt.registerLazySingleton<Repository>(() => RepositoryImpl(
-      fireStoreService: getIt<FireStoreService>(), dao: getIt<DataBaseDao>()));
+        fireStoreService: getIt<FireStoreService>(),
+        menuListDao: getIt<MenuProductsDao>(),
+        tablesDao: getIt<TablesPasswordDao>(),
+      ));
 
   getIt.registerLazySingleton<OrdersRepository>(() => OrdersRepositoryImpl(
         dao: getIt<OrdersDao>(),
@@ -60,13 +68,13 @@ Future<void> setupDependencies() async {
 
   /// use cases
   getIt.registerLazySingleton<GetMenuListUseCase>(
-      () => GetMenuListUseCase(repository: getIt<Repository>()));
+      () => GetMenuListUseCase(getIt<Repository>()));
 
   getIt.registerLazySingleton<TablesPasswordUseCase>(
-      () => TablesPasswordUseCase(repository: getIt<Repository>()));
+      () => TablesPasswordUseCase(getIt<Repository>()));
 
   getIt.registerLazySingleton<GetSingleProductUseCase>(
-      () => GetSingleProductUseCase(repository: getIt<Repository>()));
+      () => GetSingleProductUseCase(getIt<MenuProductsDao>()));
 
   getIt.registerLazySingleton<SyncMenuProductsUseCase>(
       () => SyncMenuProductsUseCase(getIt<Repository>()));
@@ -78,20 +86,30 @@ Future<void> setupDependencies() async {
       () => GetMenuCategoriesUseCase(getIt<Repository>()));
 
   getIt.registerLazySingleton<GetTablesPasswordForCheckingUseCase>(
-      () => GetTablesPasswordForCheckingUseCase(getIt<Repository>()));
+      () => GetTablesPasswordForCheckingUseCase(getIt<TablesPasswordDao>()));
 
   getIt.registerLazySingleton<SendOrdersToFireStoreUseCase>(
       () => SendOrdersToFireStoreUseCase(getIt<FireStoreService>()));
 
+  getIt.registerLazySingleton<GetOrderProductsUseCase>(
+      () => GetOrderProductsUseCase(getIt<OrdersDao>()));
+
+  getIt.registerLazySingleton<GetMenuProductsUseCase>(
+      () => GetMenuProductsUseCase(getIt<MenuProductsDao>()));
+
   /// database
-  getIt.registerLazySingleton<DataBaseService>(
-      () => DataBaseService.getInstance);
+  getIt.registerSingleton<AppDatabase>(AppDatabase.getInstance);
 
-  getIt.registerLazySingleton<DataBaseDao>(
-      () => DataBaseDao(getIt<DataBaseService>()));
+  getIt.registerSingletonAsync<Database>(
+      () => getIt<AppDatabase>().getDatabase());
 
-  getIt.registerLazySingleton<OrdersDao>(
-      () => OrdersDao(getIt<DataBaseService>()));
+  getIt.registerLazySingleton<MenuProductsDao>(
+      () => MenuProductsDao(getIt<Database>()));
+
+  getIt.registerLazySingleton<TablesPasswordDao>(
+      () => TablesPasswordDao(getIt<Database>()));
+
+  getIt.registerLazySingleton<OrdersDao>(() => OrdersDao(getIt<Database>()));
 
   /// others
   getIt.registerLazySingleton<FireStoreService>(() => FireStoreServiceImpl());

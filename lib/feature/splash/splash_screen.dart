@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:night_fall_restaurant/utils/constants.dart';
+import 'package:night_fall_restaurant/feature/main_tables/main_table_screen.dart';
 
 class SplashScreen extends StatefulWidget {
+  static const splashRoute = '/';
+
   const SplashScreen({super.key});
 
   @override
@@ -20,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () async {
-      await Navigator.of(context).pushReplacementNamed(tableRoute);
+      await MainTableScreen.open(context);
     });
   }
 
@@ -39,10 +41,9 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: Text(
                     'Night fall Restaurant',
                     style: TextStyle(
-                      color: textColor,
-                      fontSize: 36.0,
-                      fontFamily: 'GreatVibes'
-                    ),
+                        color: textColor,
+                        fontSize: 36.0,
+                        fontFamily: 'GreatVibes'),
                   ),
                 ),
               )

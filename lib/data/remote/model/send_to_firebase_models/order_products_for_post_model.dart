@@ -1,7 +1,7 @@
-import '../../../local/entities/orders_entity.dart';
+import 'package:night_fall_restaurant/domain/model/order_products_model.dart';
 
 class OrderProductsForPostModel {
-  final String orderProductId;
+  final String orderId;
   final String productName;
   final String price;
   final String weight;
@@ -9,7 +9,7 @@ class OrderProductsForPostModel {
   final String amount;
 
   OrderProductsForPostModel({
-    required this.orderProductId,
+    required this.orderId,
     required this.productName,
     required this.price,
     required this.weight,
@@ -18,7 +18,7 @@ class OrderProductsForPostModel {
   });
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'orderProductId': orderProductId,
+        'orderId': orderId,
         'productName': productName,
         'image': image,
         'price': price,
@@ -28,7 +28,7 @@ class OrderProductsForPostModel {
 
   factory OrderProductsForPostModel.fromMap(Map<String, dynamic> map) =>
       OrderProductsForPostModel(
-        orderProductId: map['orderProductId'],
+        orderId: map['orderId'],
         productName: map['productName'],
         image: map['image'],
         price: map['price'],
@@ -36,15 +36,17 @@ class OrderProductsForPostModel {
         amount: map['amount'],
       );
 
-  factory OrderProductsForPostModel.fromOrdersEntity(
-          OrdersEntity ordersEntity) =>
+  factory OrderProductsForPostModel.fromOrderProductsModel({
+    required String orderUniqueId,
+    required OrderProductsModel orderProductsModel,
+  }) =>
       OrderProductsForPostModel(
-        orderProductId: ordersEntity.orderProductId,
-        productName: ordersEntity.name,
-        price: ordersEntity.price,
-        weight: ordersEntity.weight,
-        image: ordersEntity.image,
-        amount: ordersEntity.quantity.toString(),
+        orderId: orderUniqueId,
+        productName: orderProductsModel.name,
+        price: orderProductsModel.price,
+        weight: orderProductsModel.weight,
+        image: orderProductsModel.image,
+        amount: orderProductsModel.quantity.toString(),
       );
 
   @override
@@ -52,7 +54,7 @@ class OrderProductsForPostModel {
       identical(this, other) ||
       other is OrderProductsForPostModel &&
           runtimeType == other.runtimeType &&
-          orderProductId == other.orderProductId &&
+          orderId == other.orderId &&
           productName == other.productName &&
           image == other.image &&
           price == other.price &&
@@ -61,7 +63,7 @@ class OrderProductsForPostModel {
 
   @override
   int get hashCode =>
-      orderProductId.hashCode ^
+      orderId.hashCode ^
       productName.hashCode ^
       weight.hashCode ^
       image.hashCode ^

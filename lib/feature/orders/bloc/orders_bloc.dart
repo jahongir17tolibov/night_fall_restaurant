@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 import 'package:night_fall_restaurant/core/result/result_handle.dart';
 import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/order_products_for_post_model.dart';
 import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/send_orders_model.dart';
 import 'package:night_fall_restaurant/data/shared/shared_preferences.dart';
+import 'package:night_fall_restaurant/domain/model/order_products_model.dart';
+import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
-
-import '../../../data/local/entities/orders_entity.dart';
-import '../../../domain/repository/orders_repository/orders_repository.dart';
 
 part 'orders_event.dart';
 
@@ -20,27 +20,26 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
   final OrdersRepository repository;
   final AppSharedPreferences sharedPreferences;
 
-  late StreamSubscription _streamSubscription;
-
   OrdersBloc({
     required this.repository,
     required this.sharedPreferences,
   }) : super(OrdersLoadingState()) {
-    on<OrdersOnGetProductsEvent>(getOrderProductsEvent);
+    on<OrdersOnGetProductsEvent>(_getOrderProductsEvent);
 
-    on<OrdersOnClearProductsEvent>(clearAllOrdersEvent);
+    on<OrdersOnClearProductsEvent>(_clearAllOrdersEvent);
 
-    on<OrdersOnNavigateBackEvent>(navigateBackEvent);
+    on<OrdersOnNavigateBackEvent>(_navigateBackEvent);
 
-    on<OrdersOnSendProductsToFireStoreEvent>(sendOrdersEvent);
+    on<OrdersOnSendProductsToFireStoreEvent>(_sendOrdersEvent);
   }
 
   int _pricesCount = 0;
+
   int get pricesCount => _pricesCount;
 
   final DateTime _currentDateTime = DateTime.now();
 
-  Future<void> getOrderProductsEvent(
+  Future<void> _getOrderProductsEvent(
     OrdersOnGetProductsEvent event,
     Emitter<OrdersState> emit,
   ) async {
@@ -52,13 +51,17 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     }
   }
 
-  Future<void> clearAllOrdersEvent(
+  Future<void> _clearAllOrdersEvent(
     OrdersOnClearProductsEvent event,
     Emitter<OrdersState> emit,
   ) async {
-    await repository.clearAllProductsFromOrdersDb();
-    emit(OrdersLoadingState());
-    await fetchOrdersData(emit);
+    try {
+      await repository.clearAllProductsFromOrdersDb();
+      emit(OrdersLoadingState());
+      await fetchOrdersData(emit);
+    } catch (e) {
+      emit(OrdersErrorState(e.toString()));
+    }
   }
 
   Future<void> fetchOrdersData(Emitter<OrdersState> emit) async {
@@ -69,11 +72,15 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
           if (orders.data.isNotEmpty) {
             for (var order in orders.data) {
               final cleanedPrice =
-                  order.price.replaceAll("so'm", '').replaceAll(' ', '');
+                  order.price.replaceAll("so`m", '').replaceAll(' ', '');
               final parsedPrice = int.parse(cleanedPrice);
               _pricesCount += parsedPrice;
             }
-            emit(OrdersSuccessState(ordersList: orders.data));
+
+            final ordersModel = orders.data
+                .map((data) => OrderProductsModel.fromOrdersEntity(data));
+
+            emit(OrdersSuccessState(ordersList: ordersModel.toList()));
           } else {
             emit(OrdersIsEmptyState());
           }
@@ -83,47 +90,52 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     }
   }
 
-  Future<void> sendOrdersEvent(
+  Future<void> _sendOrdersEvent(
     OrdersOnSendProductsToFireStoreEvent event,
     Emitter<OrdersState> emit,
   ) async {
-    final int tableNumber = await sharedPreferences.getTableNumber();
     try {
-      final formattedDateTime = _getCurrentDateTime();
-      final encryptedId = _getCurrentEncryptedDateTime(tableNumber);
-      final mappingOrderProducts = event.orders.map((order) {
-        final productModel = OrderProductsForPostModel.fromOrdersEntity(order);
-        return productModel;
-      });
-      final SendOrdersModel sendOrders = SendOrdersModel(
-        orderId: encryptedId,
-        tableNumber: tableNumber.toString(),
-        sendTime: formattedDateTime,
-        totalPrice: "${_pricesCount}so'm",
-        orderProducts: mappingOrderProducts.toList(),
-      );
-      await repository.sendOrdersToFireStore(sendOrders);
-      emit(OrdersShowSnackBarOnSendOrdersState(
-        'orders from the table $tableNumber were sent successfully',
-      ));
+      final int tableNumber = await sharedPreferences.getTableNumber();
+      final hasConnection = await InternetConnectionChecker().hasConnection;
+      final String formattedDateTime = _getCurrentDateTime();
+      final String encryptedId = _getCurrentEncryptedDateTime(tableNumber);
+
+      if (hasConnection) {
+        final mappingOrderProducts = event.orders
+            .map((order) => OrderProductsForPostModel.fromOrderProductsModel(
+                  orderUniqueId: encryptedId,
+                  orderProductsModel: order,
+                ));
+
+        final SendOrdersModel sendOrders = SendOrdersModel(
+          orderId: encryptedId,
+          tableNumber: tableNumber.toString(),
+          sendTime: formattedDateTime,
+          totalPrice: "${_pricesCount}so`m",
+          orderProducts: mappingOrderProducts.toList(),
+        );
+
+        await repository.sendOrdersToFireStore(sendOrders);
+        emit(OrdersOnShowSnackMessageActionState(
+          'orders from the table $tableNumber were sent successfully',
+        ));
+      } else {
+        emit(OrdersOnShowSnackMessageActionState("Check internet connection"));
+      }
     } catch (e) {
-      emit(OrdersShowSnackBarOnSendOrdersState(e.toString()));
+      emit(OrdersOnShowSnackMessageActionState(e.toString()));
     }
   }
 
   /// action events
-  Future<void> navigateBackEvent(
+  Future<void> _navigateBackEvent(
     OrdersOnNavigateBackEvent event,
     Emitter<OrdersState> emit,
   ) async {
-    emit(OrdersListenOnBackNavigateState());
+    if (event.isButton) {
+      emit(OrdersListenOnBackNavigateState());
+    }
     _pricesCount = 0;
-  }
-
-  @override
-  Future<void> close() async {
-    super.close();
-    _streamSubscription.cancel();
   }
 
   String _getCurrentDateTime() =>

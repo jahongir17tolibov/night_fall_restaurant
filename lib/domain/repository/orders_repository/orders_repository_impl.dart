@@ -1,4 +1,4 @@
-import 'package:night_fall_restaurant/data/local/db/orders_db_dao.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/orders_db_dao.dart';
 import 'package:night_fall_restaurant/data/local/entities/orders_entity.dart';
 import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/send_orders_model.dart';
 import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository.dart';
@@ -44,7 +44,7 @@ class OrdersRepositoryImpl extends OrdersRepository {
   @override
   Future<String?> getSingleOrdersProductId(String orderProductId) async {
     final String? getOrderProductId =
-        await dao.getSingleOrdersProductId(orderProductId);
+        await dao.getSingleOrderProductId(orderProductId);
     if (getOrderProductId != null) {
       return getOrderProductId;
     } else {

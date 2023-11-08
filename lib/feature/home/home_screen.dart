@@ -1,21 +1,32 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:night_fall_restaurant/feature/home/bloc/home_bloc.dart';
+import 'package:night_fall_restaurant/feature/orders/orders_screen.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
+import 'package:night_fall_restaurant/utils/ui_components/custom_tab_bar_indicator.dart';
 import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
 import 'package:night_fall_restaurant/utils/ui_components/shimmer_gradient.dart';
 import 'package:night_fall_restaurant/utils/ui_components/show_snack_bar.dart';
+import 'package:night_fall_restaurant/utils/ui_components/skeleton_for_shimmer.dart';
 import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
 
-import '../../utils/constants.dart';
-import '../../utils/ui_components/custom_tab_bar_indicator.dart';
-import '../../utils/ui_components/on_back_navigate.dart';
-import '../../utils/ui_components/skeleton_for_shimmer.dart';
-
 class HomeScreen extends StatefulWidget {
+  static const ROUTE_NAME = "/home";
+  final isSelectedColor = const Color(0xFF166200);
+
+  static void open(BuildContext context) {
+    Navigator.of(context).pushNamed(ROUTE_NAME);
+  }
+
+  static void close(BuildContext context) {
+    Navigator.of(context).pop();
+  }
+
   const HomeScreen({super.key});
 
   @override
@@ -23,17 +34,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  final ScrollController _scrollController =
-      ScrollController(keepScrollOffset: false);
+  late ScrollController _scrollController;
   late AnimationController _animateController;
   int _selectedTabIndex = 0;
   final List<bool> _buttonStates = [];
 
-  static const isSelectedColor = Color(0xFF166200);
-
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController(keepScrollOffset: false);
     context.read<HomeBloc>().add(HomeOnGetMenuListEvent());
     _animateController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -52,8 +61,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final size = fillMaxSize(context);
     final orientation = MediaQuery.of(context).orientation;
     final double itemHeight = orientation == Orientation.portrait
-        ? (size.height - kToolbarHeight - 24) / 2.40
-        : (size.height - kToolbarHeight - 24) / 2.15;
+        ? (size.height - kToolbarHeight - 24) * 0.408
+        : (size.height - kToolbarHeight - 24) * 0.445;
     final double itemWidth =
         orientation == Orientation.portrait ? size.width / 2 : size.height / 4;
     // setupScrollController(gridItemHeight: itemHeight);
@@ -85,6 +94,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           strokeWidth: 3.0,
           child: BlocConsumer<HomeBloc, HomeState>(
+            buildWhen: (previous, current) => current is! HomeActionState,
+            listenWhen: (previous, current) => current is HomeActionState,
             builder: (context, state) {
               if (state is HomeSuccessState) {
                 //for set categories name to tab
@@ -129,7 +140,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         crossAxisCount:
                             orientation == Orientation.portrait ? 2 : 4,
                         childAspectRatio: (itemWidth / itemHeight),
-                        // childAspectRatio: 0.55
                       ),
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
@@ -145,12 +155,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (_buttonStates.length <= itemIndex) {
                           _buttonStates.add(false);
                         }
-                        // sort data by category id
-                        final productsSortedList = state.response
-                          ..sort((it, data) => it.productCategoryId
-                              .compareTo(data.productCategoryId));
                         // indexing sorted data
-                        final item = productsSortedList[itemIndex];
+                        final item = state.response[itemIndex];
                         final gridItem = _gridItemView(
                           productId: item.id!,
                           name: item.name,
@@ -172,19 +178,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               }
               return Container();
             },
-            buildWhen: (previous, current) => current is! HomeActionState,
-            listenWhen: (previous, current) => current is HomeActionState,
             listener: (BuildContext context, HomeState state) {
               if (state is HomeNavigateBackActionState) {
                 Navigator.of(context).pop();
               }
               if (state is HomeNavigateToOrdersScreenState) {
-                Navigator.of(context).pushNamed(ordersRoute);
+                OrdersScreen.open(context);
               }
-              if (state is HomeListenInsertToOrderActionState) {
-                showSnackBar(state.message, context);
-              }
-              if (state is HomeListenDeleteFromOrderActionState) {
+              if (state is HomeShowSnackMessageActionState) {
                 showSnackBar(state.message, context);
               }
             },
@@ -232,12 +233,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: _buttonStates[itemIndex]
-            ? isSelectedColor
+            ? widget.isSelectedColor
             : Theme.of(context).colorScheme.tertiary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(fillMaxWidth(context)),
         ),
-        minimumSize: Size(fillMaxWidth(context), 36.0),
+        minimumSize: Size(fillMaxWidth(context), fillMaxHeight(context) * 0.04),
         elevation: 4.0,
       ),
       label: TextView(
@@ -268,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: CachedNetworkImage(
                   imageUrl: image,
                   width: fillMaxWidth(context),
-                  height: 140.0,
+                  height: fillMaxHeight(context) * 0.156,
                   fit: BoxFit.fill,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
                       Container(

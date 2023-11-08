@@ -8,7 +8,7 @@ class OrdersLoadingState extends OrdersState {
 }
 
 class OrdersSuccessState extends OrdersState {
-  final List<OrdersEntity> ordersList;
+  final List<OrderProductsModel> ordersList;
 
   OrdersSuccessState({required this.ordersList}) : super();
 }
@@ -27,8 +27,20 @@ sealed class OrdersActionState extends OrdersState {}
 
 class OrdersListenOnBackNavigateState extends OrdersActionState {}
 
-class OrdersShowSnackBarOnSendOrdersState extends OrdersActionState {
+class OrdersOnShowSnackMessageActionState extends OrdersActionState {
   final String message;
 
-  OrdersShowSnackBarOnSendOrdersState(this.message);
+  OrdersOnShowSnackMessageActionState(this.message);
+}
+
+class OrdersAddValueActionState extends OrdersActionState {
+  final int value;
+
+  OrdersAddValueActionState(this.value);
+}
+
+class OrdersRemoveValueActionState extends OrdersActionState {
+  final int value;
+
+  OrdersRemoveValueActionState(this.value);
 }

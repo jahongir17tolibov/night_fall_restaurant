@@ -1,16 +1,16 @@
-class ChangeTableModelResponse {
+class TablesPasswordResponse {
   final int tableNumber;
   final String tablePassword;
 
-  ChangeTableModelResponse({required this.tableNumber, required this.tablePassword});
+  TablesPasswordResponse({required this.tableNumber, required this.tablePassword});
 
   Map<String, dynamic> toMap() => <String, dynamic>{
         'tableNumber': tableNumber,
         'tablePassword': tablePassword,
       };
 
-  factory ChangeTableModelResponse.fromMap(Map<String, dynamic> map) =>
-      ChangeTableModelResponse(
+  factory TablesPasswordResponse.fromMap(Map<String, dynamic> map) =>
+      TablesPasswordResponse(
         tableNumber: map['tableNumber'],
         tablePassword: map['tablePassword'],
       );
@@ -18,7 +18,7 @@ class ChangeTableModelResponse {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ChangeTableModelResponse &&
+      other is TablesPasswordResponse &&
           tableNumber == other.tableNumber &&
           tablePassword == other.tablePassword;
 

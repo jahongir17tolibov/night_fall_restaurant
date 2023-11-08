@@ -3,11 +3,11 @@ import 'package:night_fall_restaurant/data/local/db/dao/menu_products_dao.dart';
 import 'package:night_fall_restaurant/data/local/entities/menu_products_list_entity.dart';
 
 @immutable
-class GetSingleProductUseCase {
+class GetMenuProductsUseCase {
   final MenuProductsDao dao;
 
-  const GetSingleProductUseCase(this.dao);
+  const GetMenuProductsUseCase(this.dao);
 
-  Future<MenuProductsEntity> call(int id) async =>
-      await dao.getSingleMenuProduct(id);
+  Future<List<MenuProductsEntity>> call() async =>
+      await dao.getCachedMenuList();
 }

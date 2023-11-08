@@ -1,33 +1,40 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:night_fall_restaurant/data/remote/model/categories.dart';
 
-class MenuCategoriesDto {
+class MenuCategoriesEntity {
+  static const CM_ID = "menu_categories_id";
+  static const CM_CATEGORY_NAME = "category_name";
+  static const CM_CATEGORY_ID = "category_id";
+  static const TABLE_NAME = "categories_entity";
+
   final int? id;
   final String categoryName;
   final String categoryId;
 
-  MenuCategoriesDto({
+  MenuCategoriesEntity({
     this.id,
     required this.categoryName,
     required this.categoryId,
   });
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'categoryName': categoryName,
-        'categoryId': categoryId,
+        CM_ID: id,
+        CM_CATEGORY_NAME: categoryName,
+        CM_CATEGORY_ID: categoryId,
       };
 
-  factory MenuCategoriesDto.fromMap(Map<String, dynamic> map) =>
-      MenuCategoriesDto(
-        id: map['id'],
-        categoryName: map['categoryName'],
-        categoryId: map['categoryId'],
+  factory MenuCategoriesEntity.fromMap(Map<String, dynamic> map) =>
+      MenuCategoriesEntity(
+        id: map[CM_ID],
+        categoryName: map[CM_CATEGORY_NAME],
+        categoryId: map[CM_CATEGORY_ID],
       );
 
-  factory MenuCategoriesDto.fromMenuProductsListResponse({
+  factory MenuCategoriesEntity.fromMenuProductsListResponse({
     required Categories categories,
   }) =>
-      MenuCategoriesDto(
+      MenuCategoriesEntity(
         categoryName: categories.category_name,
         categoryId: categories.category_id,
       );
@@ -35,7 +42,7 @@ class MenuCategoriesDto {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MenuCategoriesDto &&
+      other is MenuCategoriesEntity &&
           runtimeType == other.runtimeType &&
           id == other.id &&
           categoryName == other.categoryName &&

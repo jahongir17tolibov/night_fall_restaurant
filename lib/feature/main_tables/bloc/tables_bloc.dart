@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:night_fall_restaurant/core/result/result_handle.dart';
-import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
+import 'package:night_fall_restaurant/data/local/entities/table_passwords_entity.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_tables_password_use_case.dart';
 
 import '../../../data/shared/shared_preferences.dart';
@@ -32,8 +32,6 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     on<TablesOnPasswordSubmitEvent>(passwordSubmitEvent);
 
     on<TablesOnNavigateToHomeScreenEvent>(navigateToHomeEvent);
-
-    on<TablesOnShowNumberPickerEvent>(showNumberPickerEvent);
 
     on<TablesOnShowChangeTableDialogEvent>(showChangeTableDialogEvent);
   }
@@ -83,13 +81,6 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     emit(TablesNavigateToHomeScreenActionState());
   }
 
-  Future<void> showNumberPickerEvent(
-    TablesOnShowNumberPickerEvent event,
-    Emitter<TablesState> emit,
-  ) async {
-    emit(TablesShowNumberPickerActionState());
-  }
-
   Future<void> showChangeTableDialogEvent(
     TablesOnShowChangeTableDialogEvent event,
     Emitter<TablesState> emit,
@@ -123,7 +114,7 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
   }
 
   bool checkPasswords(
-    List<TablesPasswordDto> tablesData,
+    List<TablePasswordsEntity> tablesData,
     String tableNumber,
     String tablePassword,
   ) {

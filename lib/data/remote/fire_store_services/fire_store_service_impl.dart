@@ -1,21 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/order_products_for_post_model.dart';
 import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/send_orders_model.dart';
-import '../model/change_table_model_response.dart';
+
+import '../model/tables_password_response.dart';
 import '../model/get_menu_list_response.dart';
 import 'fire_store_service.dart';
 
 class FireStoreServiceImpl extends FireStoreService {
-  static final fireStore = FirebaseFirestore.instance;
-  static const String menuCollectionPath = 'products_menu';
-  static const String tablesCollectionPath = 'tables_passwords';
-  static const String ordersCollectionPath = 'orders';
-  static const String menuDocsPath = '1_categories';
+  static final _fireStore = FirebaseFirestore.instance;
+  static const String _menuCollectionPath = 'products_menu';
+  static const String _tablesCollectionPath = 'tables_passwords';
+  static const String _ordersCollectionPath = 'orders';
+  static const String _menuDocsPath = '1_categories';
 
   @override
   Future<GetMenuListResponse> getMenuList() async {
     try {
-      final docRef = fireStore.collection(menuCollectionPath).doc(menuDocsPath);
+      final DocumentReference<Map<String, dynamic>> docRef =
+          _fireStore.collection(_menuCollectionPath).doc(_menuDocsPath);
       DocumentSnapshot documentSnapshot = await docRef.get();
 
       if (documentSnapshot.exists) {
@@ -31,16 +32,16 @@ class FireStoreServiceImpl extends FireStoreService {
   }
 
   @override
-  Future<List<ChangeTableModelResponse>> getTablePasswords() async {
+  Future<List<TablesPasswordResponse>> getTablePasswords() async {
     try {
-      final tablesQuery = await fireStore
-          .collection(tablesCollectionPath)
+      final tablesQuery = await _fireStore
+          .collection(_tablesCollectionPath)
           .orderBy('tableNumber')
           .get();
       final docsCollect = tablesQuery.docs;
       if (docsCollect.isNotEmpty) {
         return docsCollect
-            .map((it) => ChangeTableModelResponse.fromMap(it.data()))
+            .map((it) => TablesPasswordResponse.fromMap(it.data()))
             .toList();
       } else {
         throw Exception('Document doesn`t exist');
@@ -54,7 +55,7 @@ class FireStoreServiceImpl extends FireStoreService {
   Future<void> sendOrders(SendOrdersModel sendOrdersModel) async {
     try {
       final CollectionReference ordersCollection =
-          fireStore.collection(ordersCollectionPath);
+          _fireStore.collection(_ordersCollectionPath);
       await ordersCollection.add(sendOrdersModel.toMap());
     } catch (e) {
       throw Exception(e);

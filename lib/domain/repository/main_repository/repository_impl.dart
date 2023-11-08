@@ -1,52 +1,69 @@
-import 'package:night_fall_restaurant/data/local/entities/menu_categories_dto.dart';
-import 'package:night_fall_restaurant/data/local/entities/menu_products_list_dto.dart';
-import 'package:night_fall_restaurant/data/local/entities/tables_password_dto.dart';
+import 'package:night_fall_restaurant/core/result/result_handle.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/menu_products_dao.dart';
+import 'package:night_fall_restaurant/data/local/db/dao/tables_password_dao.dart';
+import 'package:night_fall_restaurant/data/local/entities/menu_categories_entity.dart';
+import 'package:night_fall_restaurant/data/local/entities/menu_products_list_entity.dart';
+import 'package:night_fall_restaurant/data/local/entities/table_passwords_entity.dart';
+import 'package:night_fall_restaurant/data/remote/fire_store_services/fire_store_service.dart';
 import 'package:night_fall_restaurant/domain/repository/main_repository/repository.dart';
-
-import '../../../data/local/db/database_dao.dart';
-import '../../../core/result/result_handle.dart';
-import '../../../data/remote/fire_store_services/fire_store_service.dart';
 
 class RepositoryImpl extends Repository {
   final FireStoreService fireStoreService;
-  final DataBaseDao dao;
+  final MenuProductsDao menuListDao;
+  final TablesPasswordDao tablesDao;
 
-  RepositoryImpl({required this.fireStoreService, required this.dao});
+  RepositoryImpl({
+    required this.fireStoreService,
+    required this.menuListDao,
+    required this.tablesDao,
+  });
 
-  final Exception _ifEmptyDataException = Exception(
-    "database is empty or check internet connection",
-  );
+    static final Exception _ifEmptyDataException = Exception(
+      "Database is empty or check internet connection",
+    );
 
   @override
   Future<void> syncMenuProductsList() async {
     final menuProductsFromFireStore = await fireStoreService.getMenuList();
-    final getCachedMenuProductsList = await dao.getCachedMenuList();
-    final getCachedMenuCategories = await dao.getCachedMenuCategories();
+    final cachedMenuProductsList = await menuListDao.getCachedMenuList();
+    final cachedMenuCategories = await menuListDao.getCachedMenuCategories();
 
     /// mapping fireStoreData to Database table
-    final mappingMenuProductsList = menuProductsFromFireStore.menu_products.map(
-        (data) =>
-            MenuProductsListDto.fromMenuProductsListResponse(menuList: data));
+    try {
+      final mappingMenuProductsList = menuProductsFromFireStore.menu_products
+          .map((data) => MenuProductsEntity.fromMenuProductsListResponse(
+                menuList: data,
+              ))
+        ..forEach((products) async {
+          if (cachedMenuProductsList.isEmpty) {
+            await menuListDao.insertMenuProductsList(products);
+          } else {
+            await menuListDao.updateMenuProductsList(products);
+          }
+        });
 
-    final mappingMenuCategories = menuProductsFromFireStore.menu_categories.map(
-        (category) => MenuCategoriesDto.fromMenuProductsListResponse(
-            categories: category));
+      final mappingMenuCategories = menuProductsFromFireStore.menu_categories
+          .map((category) => MenuCategoriesEntity.fromMenuProductsListResponse(
+                categories: category,
+              ))
+        ..forEach((categories) async {
+          if (cachedMenuCategories.isEmpty) {
+            await menuListDao.insertMenuCategories(categories);
+          } else {
+            await menuListDao.updateMenuCategoriesList(categories);
+          }
+        });
 
-    /// if is menuProductsList table empty insert data to table else update existing data
-    for (var data in mappingMenuProductsList) {
-      if (getCachedMenuProductsList.isEmpty) {
-        await dao.insertMenuProductsList(data);
-      } else {
-        await dao.updateMenuProductsList(data);
+      if (cachedMenuProductsList.isNotEmpty &&
+          cachedMenuCategories.isNotEmpty) {
+        if (cachedMenuProductsList.length !=
+            menuProductsFromFireStore.menu_products.length) {
+          await _operationMenuProducts(mappingMenuProductsList);
+          await _operationMenuCategories(mappingMenuCategories);
+        }
       }
-    }
-
-    for (var data in mappingMenuCategories) {
-      if (getCachedMenuCategories.isEmpty) {
-        await dao.insertMenuCategories(data);
-      } else {
-        await dao.updateMenuCategoriesList(data);
-      }
+    } on Exception catch (e) {
+      throw Exception(e);
     }
   }
 
@@ -54,36 +71,32 @@ class RepositoryImpl extends Repository {
   Future<void> syncTablesPassword() async {
     final tablesPasswordFromFireStore =
         await fireStoreService.getTablePasswords();
-    for (var it in tablesPasswordFromFireStore) {
-      // print(
-      //     '##### from fireStore #####${it.tablePassword} and ${it.tableNumber}');
-    }
 
-    final getCachedTablesPassword = await dao.getCachedTablesPassword();
+    final cachedTablesPassword = await tablesDao.getCachedTablesPassword();
 
-    final mappingTablesPassword = tablesPasswordFromFireStore.map((data) {
-      // print(
-      //     '!!!!! in mapping !!!!!${data.tablePassword} and ${data.tableNumber}');
-      return TablesPasswordDto.fromTablesPasswordResponse(tablesResponse: data);
-    });
+    final mappingTablesPassword = tablesPasswordFromFireStore.map((data) =>
+        TablePasswordsEntity.fromTablesPasswordResponse(tablesResponse: data))
+      ..forEach((data) async {
+        if (cachedTablesPassword.isEmpty) {
+          await tablesDao.insertTablesPassword(data);
+        } else {
+          await tablesDao.updateTablePasswords(data);
+        }
+      });
 
-    /// if is tablesPassword table empty insert data to table else update existing data
-    for (var data in mappingTablesPassword) {
-      if (getCachedTablesPassword.isEmpty) {
-        await dao.insertTablesPassword(data);
-      } else if (getCachedTablesPassword.isNotEmpty) {
-        print('update is works');
-        await dao.updateTablesPassword(data);
+    if (cachedTablesPassword.isNotEmpty) {
+      if (cachedTablesPassword.length != tablesPasswordFromFireStore.length) {
+        await _operationTablePasswords(mappingTablesPassword);
       }
     }
   }
 
   @override
-  Future<Result<List<MenuProductsListDto>>> getMenuListFromDb() async {
+  Future<Result<List<MenuProductsEntity>>> getMenuListFromDb() async {
     try {
-      final getMenuProductsDto = await dao.getCachedMenuList();
-      if (getMenuProductsDto.isNotEmpty) {
-        return SUCCESS(data: getMenuProductsDto);
+      final cachedMenuProducts = await menuListDao.getCachedMenuList();
+      if (cachedMenuProducts.isNotEmpty) {
+        return SUCCESS(data: cachedMenuProducts);
       } else {
         return FAILURE(exception: _ifEmptyDataException);
       }
@@ -93,12 +106,11 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<Result<List<TablesPasswordDto>>>
-      getTablesPasswordsFromDb() async {
+  Future<Result<List<TablePasswordsEntity>>> getTablesPasswordsFromDb() async {
     try {
-      final getTablesPasswordDto = await dao.getCachedTablesPassword();
-      if (getTablesPasswordDto.isNotEmpty) {
-        return SUCCESS(data: getTablesPasswordDto);
+      final cachedTablesPassword = await tablesDao.getCachedTablesPassword();
+      if (cachedTablesPassword.isNotEmpty) {
+        return SUCCESS(data: cachedTablesPassword);
       } else {
         return FAILURE(exception: _ifEmptyDataException);
       }
@@ -108,15 +120,11 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<List<TablesPasswordDto>> getTablesPasswordsForChecking() async =>
-      await dao.getCachedTablesPassword();
-
-  @override
-  Future<List<MenuCategoriesDto>> getMenuCategoriesFromDb() async {
+  Future<List<MenuCategoriesEntity>> getMenuCategoriesFromDb() async {
     try {
-      final getMenuCategoriesDto = await dao.getCachedMenuCategories();
-      if (getMenuCategoriesDto.isNotEmpty) {
-        return getMenuCategoriesDto;
+      final cachedCategories = await menuListDao.getCachedMenuCategories();
+      if (cachedCategories.isNotEmpty) {
+        return cachedCategories;
       } else {
         throw Exception('categories List is empty');
       }
@@ -125,7 +133,30 @@ class RepositoryImpl extends Repository {
     }
   }
 
-  @override
-  Future<MenuProductsListDto> getSingleProductFromDb(int productId) async =>
-      await dao.getSingleMenuProduct(productId);
+  Future<void> _operationMenuProducts(
+    Iterable<MenuProductsEntity> mappingMenuProductsList,
+  ) async {
+    await menuListDao.clearMenuProducts();
+    for (var products in mappingMenuProductsList) {
+      await menuListDao.insertMenuProductsList(products);
+    }
+  }
+
+  Future<void> _operationMenuCategories(
+    Iterable<MenuCategoriesEntity> mappingMenuCategories,
+  ) async {
+    await menuListDao.clearMenuCategories();
+    for (var categories in mappingMenuCategories) {
+      await menuListDao.insertMenuCategories(categories);
+    }
+  }
+
+  Future<void> _operationTablePasswords(
+    Iterable<TablePasswordsEntity> mappingTablesPassword,
+  ) async {
+    await tablesDao.clearAllTablePasswords();
+    for (var it in mappingTablesPassword) {
+      await tablesDao.insertTablesPassword(it);
+    }
+  }
 }

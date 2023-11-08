@@ -6,6 +6,7 @@ Widget errorWidget(String errorText, BuildContext context) => Center(
         padding: const EdgeInsets.all(10.0),
         child: TextView(
           text: errorText,
+          maxLines: 5,
           textColor: Theme.of(context).colorScheme.error,
           textSize: 20.0,
         ),

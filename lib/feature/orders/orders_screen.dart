@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,23 +8,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import 'package:night_fall_restaurant/feature/main_tables/bloc/tables_bloc.dart';
+import 'package:night_fall_restaurant/domain/model/order_products_model.dart';
+import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/orders/bloc/orders_bloc.dart';
-import 'package:night_fall_restaurant/utils/constants.dart';
+import 'package:night_fall_restaurant/utils/helpers.dart';
 import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
+import 'package:night_fall_restaurant/utils/ui_components/shimmer_gradient.dart';
 import 'package:night_fall_restaurant/utils/ui_components/show_snack_bar.dart';
 import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
-
-import '../../data/local/entities/orders_entity.dart';
-import '../../utils/helpers.dart';
-import '../../utils/ui_components/on_back_navigate.dart';
-import '../../utils/ui_components/shimmer_gradient.dart';
+import 'package:provider/provider.dart';
 
 class OrdersScreen extends StatefulWidget {
+  static const String ROUTE_NAME = "/orders";
+
   const OrdersScreen({super.key});
 
   @override
   State<StatefulWidget> createState() => _OrdersScreenState();
+
+  static void open(BuildContext context) {
+    Navigator.of(context).pushNamed(ROUTE_NAME);
+  }
 }
 
 class _OrdersScreenState extends State<OrdersScreen>
@@ -48,111 +54,172 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     _pricesCount = context.watch<OrdersBloc>().pricesCount;
-    return Scaffold(
-      appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
+    return WillPopScope(
+      child: Scaffold(
+        appBar: AppBar(
+          actions: <Widget>[
+            IconButton(
+              onPressed: () {
+                context.read<OrdersBloc>().add(OrdersOnClearProductsEvent());
+              },
+              icon: Icon(
+                Icons.clear_all_rounded,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(width: 10.0),
+          ],
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: TextView(
+            text: 'My orders',
+            textColor: Theme.of(context).colorScheme.onSurface,
+          ),
+          leading: IconButton(
             onPressed: () {
-              context.read<OrdersBloc>().add(OrdersOnClearProductsEvent());
+              context.read<OrdersBloc>().add(OrdersOnNavigateBackEvent());
             },
             icon: Icon(
-              Icons.clear_all_rounded,
+              Icons.arrow_back_rounded,
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(width: 10.0),
-        ],
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: TextView(
-          text: 'My orders',
-          textColor: Theme.of(context).colorScheme.onSurface,
         ),
-        leading: IconButton(
-          onPressed: () {
-            context.read<OrdersBloc>().add(OrdersOnNavigateBackEvent());
-          },
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-      ),
-      body: BlocConsumer<OrdersBloc, OrdersState>(
-        buildWhen: (previous, current) => current is! OrdersActionState,
-        listenWhen: (previous, current) => current is OrdersActionState,
-        builder: (context, state) {
-          switch (state) {
-            case OrdersLoadingState():
-              return Center(
-                child: CupertinoActivityIndicator(
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  radius: 36.0,
-                ),
-              );
-            case OrdersSuccessState():
-              {
+        body: BlocConsumer<OrdersBloc, OrdersState>(
+          buildWhen: (previous, current) => current is! OrdersActionState,
+          listenWhen: (previous, current) => current is OrdersActionState,
+          builder: (context, state) {
+            switch (state) {
+              case OrdersLoadingState():
                 return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Expanded(
-                        child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 4.0,
-                              horizontal: 6.0,
-                            ),
-                            scrollDirection: Axis.vertical,
-                            physics: Platform.isIOS
-                                ? const BouncingScrollPhysics()
-                                : const BouncingScrollPhysics(),
-                            itemCount: state.ordersList.length,
-                            itemBuilder: (context, index) {
-                              final item = state.ordersList[index];
-                              return _ordersItem(
-                                title: item.name,
-                                image: item.image,
-                                price: item.price,
-                              );
-                            }),
-                      ),
-                      _ordersListCard(list: state.ordersList),
-                    ],
+                  child: CupertinoActivityIndicator(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    radius: 36.0,
                   ),
                 );
-              }
-            case OrdersIsEmptyState():
-              return _cartIsEmptyAnim();
-            case OrdersErrorState():
-              return errorWidget(state.error, context);
-            default:
-              return Container();
-          }
-        },
-        listener: (BuildContext context, OrdersState state) {
-          if (state is OrdersListenOnBackNavigateState) {
-            Navigator.of(context).pop();
-          }
-          if (state is OrdersShowSnackBarOnSendOrdersState) {
-            showSnackBar(state.message, context);
-          }
-        },
+              case OrdersSuccessState():
+                {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Expanded(
+                          child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                                horizontal: 4.0,
+                              ),
+                              scrollDirection: Axis.vertical,
+                              physics: Platform.isIOS
+                                  ? const BouncingScrollPhysics()
+                                  : const BouncingScrollPhysics(),
+                              itemCount: state.ordersList.length,
+                              itemBuilder: (context, index) {
+                                final item = state.ordersList[index];
+                                return ChangeNotifierProvider<
+                                    OrderProductsModel>(
+                                  create: (_) => item,
+                                  child: Consumer<OrderProductsModel>(
+                                      builder: (context, model, _) =>
+                                          _ordersItem(item: model)),
+                                );
+                              }),
+                        ),
+                        _ordersListCard(list: state.ordersList),
+                      ],
+                    ),
+                  );
+                }
+              case OrdersIsEmptyState():
+                return _cartIsEmptyAnim();
+              case OrdersErrorState():
+                return errorWidget(state.error, context);
+              default:
+                return Container();
+            }
+          },
+          listener: (BuildContext context, OrdersState state) {
+            if (state is OrdersListenOnBackNavigateState) {
+              HomeScreen.close(context);
+            }
+            if (state is OrdersOnShowSnackMessageActionState) {
+              showSnackBar(state.message, context);
+            }
+          },
+        ),
       ),
+      onWillPop: () async {
+        context.read<OrdersBloc>().add(OrdersOnNavigateBackEvent());
+        return true;
+      },
     );
   }
 
-  Widget _ordersItem({
-    required String title,
-    required String image,
-    required String price,
-  }) {
+  /// orders list side
+  Widget _ordersItem({required OrderProductsModel item}) {
+    /// add or remove products widget
+    Widget amountProductsWidget = Container(
+      width: fillMaxWidth(context) * 0.21,
+      height: fillMaxHeight(context) * 0.034,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.outline.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(fillMaxWidth(context)),
+      ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            /// remove button
+            Expanded(
+              flex: 1,
+              child: IconButton(
+                onPressed: item.decrease,
+                icon: Icon(
+                  Icons.remove_rounded,
+                  size: 16.0,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+              ),
+            ),
+
+            /// value state text
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: TextView(
+                  text: "${item.quantity}",
+                  textColor: Theme.of(context).colorScheme.onBackground,
+                  textSize: 14.0,
+                  weight: FontWeight.w500,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+
+            /// add button
+            Expanded(
+              flex: 1,
+              child: IconButton(
+                onPressed: item.increase,
+                icon: Icon(
+                  Icons.add_rounded,
+                  size: 16.0,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
     /// imageView
     Widget productsImage = ClipRRect(
       borderRadius: BorderRadius.circular(14.0),
       child: CachedNetworkImage(
-        imageUrl: image,
-        width: 70.0,
-        height: 90.0,
+        imageUrl: item.image,
+        width: fillMaxWidth(context) * 0.175,
+        height: fillMaxHeight(context) * 0.1,
         fit: BoxFit.fill,
         progressIndicatorBuilder: (context, url, downloadProgress) => Container(
           decoration: BoxDecoration(
@@ -173,18 +240,19 @@ class _OrdersScreenState extends State<OrdersScreen>
       tileColor: Theme.of(context).colorScheme.surface,
       splashColor: Theme.of(context).colorScheme.secondaryContainer,
       leading: productsImage,
+      trailing: amountProductsWidget,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
       title: TextView(
-        text: title,
+        text: item.name,
         textColor: Theme.of(context).colorScheme.onSurface,
         textSize: 22.0,
         maxLines: 1,
         weight: FontWeight.w500,
       ),
       subtitle: TextView(
-        text: price,
+        text: item.price,
         textColor: Theme.of(context).colorScheme.onSurface,
         textSize: 12.5,
         maxLines: 1,
@@ -192,7 +260,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  Widget _ordersListCard({required List<OrdersEntity> list}) {
+  /// send orders side
+  Widget _ordersListCard({required List<OrderProductsModel> list}) {
     return Card(
       color: Theme.of(context).colorScheme.secondary,
       shape: RoundedRectangleBorder(
@@ -202,10 +271,11 @@ class _OrdersScreenState extends State<OrdersScreen>
       elevation: 6.0,
       child: Container(
         width: fillMaxWidth(context),
-        height: 220.0,
+        height: fillMaxHeight(context) * 0.25,
         padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 18.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
               child: ListView.builder(
@@ -233,7 +303,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                 ),
                 TextView(
                   text:
-                      "${NumberFormat.decimalPatternDigits().format(_pricesCount)} so'm",
+                      "${NumberFormat.decimalPatternDigits().format(_pricesCount)} so`m",
                   textColor: Theme.of(context).colorScheme.onSecondary,
                   textSize: 20.0,
                   weight: FontWeight.w700,
@@ -244,13 +314,14 @@ class _OrdersScreenState extends State<OrdersScreen>
             const SizedBox(height: 8.0),
             MaterialButton(
                 onPressed: () {
-                  context
-                      .read<OrdersBloc>()
-                      .add(OrdersOnSendProductsToFireStoreEvent(list));
+
+                  // context
+                  //     .read<OrdersBloc>()
+                  //     .add(OrdersOnSendProductsToFireStoreEvent(list));
                 },
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 minWidth: fillMaxWidth(context),
-                height: 45.0,
+                height: fillMaxHeight(context) * 0.05,
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
                     width: 2.0,

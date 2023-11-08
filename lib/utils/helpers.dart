@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-fillMaxWidth(BuildContext context) => MediaQuery.of(context).size.width;
+double fillMaxWidth(BuildContext context) => MediaQuery.of(context).size.width;
 
-fillMaxHeight(BuildContext context) => MediaQuery.of(context).size.height;
+double fillMaxHeight(BuildContext context) =>
+    MediaQuery.of(context).size.height;
 
 fillMaxSize(BuildContext context) => MediaQuery.of(context).size;
 
