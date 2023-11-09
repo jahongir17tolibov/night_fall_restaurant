@@ -314,10 +314,9 @@ class _OrdersScreenState extends State<OrdersScreen>
             const SizedBox(height: 8.0),
             MaterialButton(
                 onPressed: () {
-
-                  // context
-                  //     .read<OrdersBloc>()
-                  //     .add(OrdersOnSendProductsToFireStoreEvent(list));
+                  context
+                      .read<OrdersBloc>()
+                      .add(OrdersOnSendProductsToFireStoreEvent(list));
                 },
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 minWidth: fillMaxWidth(context),

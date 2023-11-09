@@ -45,7 +45,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
   ) async {
     emit(OrdersLoadingState());
     try {
-      await fetchOrdersData(emit);
+      await _fetchOrdersData(emit);
     } on Exception catch (e) {
       emit(OrdersErrorState(e.toString()));
     }
@@ -58,13 +58,13 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     try {
       await repository.clearAllProductsFromOrdersDb();
       emit(OrdersLoadingState());
-      await fetchOrdersData(emit);
+      await _fetchOrdersData(emit);
     } catch (e) {
       emit(OrdersErrorState(e.toString()));
     }
   }
 
-  Future<void> fetchOrdersData(Emitter<OrdersState> emit) async {
+  Future<void> _fetchOrdersData(Emitter<OrdersState> emit) async {
     final orders = await repository.getProductsFromOrdersDb();
     switch (orders) {
       case SUCCESS():
