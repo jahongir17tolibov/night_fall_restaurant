@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:night_fall_restaurant/data/local/entities/table_passwords_entity.dart';
 import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/main_tables/bloc/tables_bloc.dart';
 import 'package:night_fall_restaurant/utils/constants.dart';
@@ -27,19 +28,21 @@ class MainTableScreen extends StatefulWidget {
 class _MainTableScreenState extends State<MainTableScreen>
     with TickerProviderStateMixin {
   late AnimationController _animateController;
+  late int _selectedNumber;
   FocusNode textFieldFocusNode = FocusNode();
   TextEditingController textEditingController = TextEditingController();
   static const double kItemExtent = 32;
 
-  final List<String> _tableNumbers = ['1', '2', '3', '4', '5', '6', '7', '8'];
-  int _selectedNumber = 0;
-
   @override
   void initState() {
     _animateController = AnimationController(
-      duration: const Duration(milliseconds: 500),
       vsync: this,
-    );
+      duration: const Duration(milliseconds: 500),
+      lowerBound: 0.0,
+      upperBound: 0.1,
+    )..addListener(() {
+        setState(() {});
+      });
     super.initState();
     context.read<TablesBloc>().add(TablesOnGetPasswordsEvent());
   }
@@ -53,7 +56,8 @@ class _MainTableScreenState extends State<MainTableScreen>
 
   @override
   Widget build(BuildContext context) {
-    print("$_tableNumbers and $_selectedNumber");
+    _selectedNumber = context.watch<TablesBloc>().selectedTable;
+    print(" and $_selectedNumber");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -74,6 +78,8 @@ class _MainTableScreenState extends State<MainTableScreen>
         listenWhen: (previous, current) => current is TablesActionState,
         builder: (context, state) {
           if (state is TablesSuccessState) {
+            final List<int> tableNumbers =
+                state.tablePasswords.map((e) => e.tableNumber).toList();
             return Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -94,25 +100,32 @@ class _MainTableScreenState extends State<MainTableScreen>
                         textAlign: TextAlign.center,
                       ),
                       // number of the table
-                      scaleOnPress(
-                        child: TextView(
-                          text: state.tableNumber,
-                          textColor: Theme.of(context).colorScheme.onBackground,
-                          textSize: 140.0,
+                      ScaleOnPressButton(
+                        controller: AnimationController(
+                          vsync: this,
+                          duration: const Duration(milliseconds: 500),
+                          lowerBound: 0.0,
+                          upperBound: 0.1,
+                        )..addListener(() {
+                            setState(() {});
+                          }),
+                        child: TextButton(
+                          onPressed: () {
+                            context
+                                .read<TablesBloc>()
+                                .add(TablesOnShowChangeTableDialogEvent(
+                                  tableNumbers: tableNumbers,
+                                  tablePasswords: state.tablePasswords,
+                                  currentTableNumber: state.tableNumber,
+                                ));
+                          },
+                          child: TextView(
+                            text: state.tableNumber,
+                            textColor:
+                                Theme.of(context).colorScheme.onBackground,
+                            textSize: 140.0,
+                          ),
                         ),
-                        controller: _animateController,
-                        onPressed: () {
-                          setState(() {
-                            _selectedNumber = int.parse(state.tableNumber) - 1;
-                          });
-                          // _tableNumbers.clear();
-                          // for (var element in state.tablePasswords) {
-                          //   _tableNumbers.add(element.tableNumber.toString());
-                          // }
-                          context
-                              .read<TablesBloc>()
-                              .add(TablesOnShowChangeTableDialogEvent());
-                        },
                       ),
                       // TABLE NUMBER BUTTON with scale on press animation
                     ],
@@ -123,7 +136,8 @@ class _MainTableScreenState extends State<MainTableScreen>
                     visible: MediaQuery.of(context).viewInsets.bottom == 0.0,
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 20.0),
-                      child: scaleOnPress(
+                      child: ScaleOnPressButton(
+                        controller: _animateController,
                         child: ElevatedButton(
                           onPressed: () {
                             FocusScope.of(context).unfocus();
@@ -160,10 +174,6 @@ class _MainTableScreenState extends State<MainTableScreen>
                             ],
                           ),
                         ),
-                        controller: AnimationController(
-                          duration: const Duration(milliseconds: 500),
-                          vsync: this,
-                        ),
                       ),
                     ),
                   ),
@@ -194,7 +204,11 @@ class _MainTableScreenState extends State<MainTableScreen>
             showCupertinoDialog(
               context: context,
               barrierDismissible: true,
-              builder: (_) => _textFieldDialog(),
+              builder: (_) => _textFieldDialog(
+                tableNumbers: state.tableNumbers,
+                tablePasswords: state.tablePasswords,
+                currentTableNumber: state.currentTableNumber,
+              ),
             );
           }
         },
@@ -202,7 +216,12 @@ class _MainTableScreenState extends State<MainTableScreen>
     );
   }
 
-  Widget _textFieldDialog() => CupertinoAlertDialog(
+  Widget _textFieldDialog({
+    required List<int> tableNumbers,
+    required List<TablePasswordsEntity> tablePasswords,
+    required String currentTableNumber,
+  }) =>
+      CupertinoAlertDialog(
         title: TextView(
           text: 'Change the table number',
           textColor: Theme.of(context).colorScheme.onBackground,
@@ -213,7 +232,7 @@ class _MainTableScreenState extends State<MainTableScreen>
           children: <Widget>[
             const SizedBox(height: 10.0),
             TextView(
-              text: 'Table number: ${_tableNumbers[_selectedNumber]}',
+              text: 'Table number: ${tableNumbers[_selectedNumber]}',
               textSize: 20.0,
               textColor: Theme.of(context).colorScheme.onBackground,
             ),
@@ -236,14 +255,15 @@ class _MainTableScreenState extends State<MainTableScreen>
                   initialItem: _selectedNumber,
                 ),
                 onSelectedItemChanged: (selectedItem) {
-                  setState(() {
-                    _selectedNumber = selectedItem;
-                  });
-                  print(_selectedNumber);
+                  context.read<TablesBloc>().add(TablesOnChangeTableNumberEvent(
+                        tablePasswords: tablePasswords,
+                        tableNumber: currentTableNumber,
+                        selectedItem: selectedItem,
+                      ));
                 },
                 children: List<Widget>.generate(
-                  _tableNumbers.length,
-                  (index) => Center(child: Text(_tableNumbers[index])),
+                  tableNumbers.length,
+                  (index) => Center(child: Text("${tableNumbers[index]}")),
                 ),
               ));
             },
@@ -260,9 +280,9 @@ class _MainTableScreenState extends State<MainTableScreen>
                 showSnackBar(passLengthText, context);
               } else {
                 print(
-                    '${_tableNumbers[_selectedNumber]} and ${textEditingController.text}');
+                    '${tableNumbers[_selectedNumber]} and ${textEditingController.text}');
                 context.read<TablesBloc>().add(TablesOnPasswordSubmitEvent(
-                      tableNumber: _tableNumbers[_selectedNumber],
+                      tableNumber: "${tableNumbers[_selectedNumber]}",
                       password: textEditingController.text,
                     ));
                 Navigator.of(context).pop();

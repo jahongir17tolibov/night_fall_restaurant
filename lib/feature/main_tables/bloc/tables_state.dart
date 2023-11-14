@@ -28,7 +28,17 @@ sealed class TablesActionState extends TablesState {}
 
 class TablesNavigateToHomeScreenActionState extends TablesActionState {}
 
-class TablesShowChangeTableDialogActionState extends TablesActionState {}
+class TablesShowChangeTableDialogActionState extends TablesActionState {
+  final List<int> tableNumbers;
+  final List<TablePasswordsEntity> tablePasswords;
+  final String currentTableNumber;
+
+  TablesShowChangeTableDialogActionState({
+    required this.tableNumbers,
+    required this.tablePasswords,
+    required this.currentTableNumber,
+  });
+}
 
 class TablesValidPasswordState extends TablesActionState {
   final String isValid;

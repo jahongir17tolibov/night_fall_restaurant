@@ -3,6 +3,7 @@ import 'package:night_fall_restaurant/domain/model/order_products_model.dart';
 class OrderProductsForPostModel {
   final String orderId;
   final String productName;
+  final String fireId;
   final String price;
   final String weight;
   final String image;
@@ -11,6 +12,7 @@ class OrderProductsForPostModel {
   OrderProductsForPostModel({
     required this.orderId,
     required this.productName,
+    required this.fireId,
     required this.price,
     required this.weight,
     required this.image,
@@ -20,6 +22,7 @@ class OrderProductsForPostModel {
   Map<String, dynamic> toMap() => <String, dynamic>{
         'orderId': orderId,
         'productName': productName,
+        'fireId': fireId,
         'image': image,
         'price': price,
         'weight': weight,
@@ -30,6 +33,7 @@ class OrderProductsForPostModel {
       OrderProductsForPostModel(
         orderId: map['orderId'],
         productName: map['productName'],
+        fireId: map['fireId'],
         image: map['image'],
         price: map['price'],
         weight: map['weight'],
@@ -43,6 +47,7 @@ class OrderProductsForPostModel {
       OrderProductsForPostModel(
         orderId: orderUniqueId,
         productName: orderProductsModel.name,
+        fireId: orderProductsModel.fireId,
         price: orderProductsModel.price,
         weight: orderProductsModel.weight,
         image: orderProductsModel.image,
@@ -56,6 +61,7 @@ class OrderProductsForPostModel {
           runtimeType == other.runtimeType &&
           orderId == other.orderId &&
           productName == other.productName &&
+          fireId == other.fireId &&
           image == other.image &&
           price == other.price &&
           weight == other.weight &&
@@ -65,6 +71,7 @@ class OrderProductsForPostModel {
   int get hashCode =>
       orderId.hashCode ^
       productName.hashCode ^
+      fireId.hashCode ^
       weight.hashCode ^
       image.hashCode ^
       price.hashCode ^

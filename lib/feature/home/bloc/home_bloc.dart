@@ -51,20 +51,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeOnNavigateToOrdersScreenEvent>(_navigateToOrdersEvent);
   }
 
-  bool _buttonEnabled = true;
-
-  Future<bool> buttonState() async {
-    final orderList = await getOrderProductsUseCase.call();
-    final menuProductsList = await getOrderProductsUseCase.call();
-    try {
-      final List<String> orderProductNames =
-          orderList.map((orders) => orders.name).toList();
-    } catch (e) {
-      throw Exception(e);
-    }
-    return false;
-  }
-
   Future<void> _onGetMenuProductsEvent(
     HomeOnGetMenuListEvent event,
     Emitter<HomeState> emit,
@@ -85,11 +71,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     HomeOnInsertOrDeleteOrdersEvent event,
     Emitter<HomeState> emit,
   ) async {
-    final product = await getSingleProductUseCase.call(event.productId);
     try {
+      final product = await getSingleProductUseCase.call(event.productId);
+      final int uniqueFireId = DateTime.now().millisecondsSinceEpoch;
       if (event.state) {
-        final OrdersEntity mappedProduct =
-            OrdersEntity.fromMenuProductsListDto(menuProductsList: product);
+        final OrdersEntity mappedProduct = OrdersEntity.fromMenuProductsListDto(
+          menuProductsList: product,
+          fireIdUnique: uniqueFireId.toString(),
+        );
+
         await ordersRepository.insertProductToOrdersDb(mappedProduct);
         // shows snack bar message
         emit(
@@ -99,11 +89,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         await ordersRepository
             .deleteProductFromOrderDb(event.productId.toString());
         // shows snack bar message
-        emit(
-          HomeShowSnackMessageActionState(
-            '${product.name} deleted from orders',
-          ),
-        );
+        emit(HomeShowSnackMessageActionState(
+          '${product.name} deleted from orders',
+        ));
       }
     } on Exception catch (e) {
       throw Exception(e.toString());

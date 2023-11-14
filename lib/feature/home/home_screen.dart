@@ -2,15 +2,14 @@
 
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:night_fall_restaurant/feature/home/bloc/home_bloc.dart';
 import 'package:night_fall_restaurant/feature/orders/orders_screen.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
+import 'package:night_fall_restaurant/utils/ui_components/cached_image_view.dart';
 import 'package:night_fall_restaurant/utils/ui_components/custom_tab_bar_indicator.dart';
 import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
-import 'package:night_fall_restaurant/utils/ui_components/shimmer_gradient.dart';
 import 'package:night_fall_restaurant/utils/ui_components/show_snack_bar.dart';
 import 'package:night_fall_restaurant/utils/ui_components/skeleton_for_shimmer.dart';
 import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
@@ -43,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _scrollController = ScrollController(keepScrollOffset: false);
+
     context.read<HomeBloc>().add(HomeOnGetMenuListEvent());
     _animateController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final size = fillMaxSize(context);
     final orientation = MediaQuery.of(context).orientation;
     final double itemHeight = orientation == Orientation.portrait
-        ? (size.height - kToolbarHeight - 24) * 0.408
+        ? (size.height - kToolbarHeight - 24) * 0.413
         : (size.height - kToolbarHeight - 24) * 0.445;
     final double itemWidth =
         orientation == Orientation.portrait ? size.width / 2 : size.height / 4;
@@ -85,111 +85,109 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           textColor: Theme.of(context).colorScheme.onSurface,
         ),
       ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            context.read<HomeBloc>().add(HomeOnRefreshEvent());
-          },
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          strokeWidth: 3.0,
-          child: BlocConsumer<HomeBloc, HomeState>(
-            buildWhen: (previous, current) => current is! HomeActionState,
-            listenWhen: (previous, current) => current is HomeActionState,
-            builder: (context, state) {
-              if (state is HomeSuccessState) {
-                //for set categories name to tab
-                final categoriesList = state.menuCategories.map((it) {
-                  return Tab(text: it.categoryName);
-                }).toList();
-                //ui🗿
-                return Center(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    TabBar(
-                      tabs: categoriesList,
-                      labelStyle: const TextStyle(fontFamily: 'Ktwod'),
-                      controller: TabController(
-                        animationDuration: const Duration(milliseconds: 400),
-                        length: state.menuCategories.length,
-                        vsync: this,
-                        initialIndex: _selectedTabIndex,
-                      ),
-                      physics: const ClampingScrollPhysics(),
-                      isScrollable: true,
-                      unselectedLabelColor:
-                          Theme.of(context).colorScheme.onSurfaceVariant,
-                      splashBorderRadius:
-                          const BorderRadius.all(Radius.circular(120.0)),
-                      indicator: CustomTabIndicator(
-                          Theme.of(context).colorScheme.primary),
-                      indicatorPadding: const EdgeInsets.all(4.0),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      automaticIndicatorColorAdjustment: true,
-                      dividerColor: Colors.transparent,
-                      onTap: (categoryIndex) {
-                        setState(() {
-                          _selectedTabIndex = categoryIndex;
-                        });
-                      },
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<HomeBloc>().add(HomeOnRefreshEvent());
+        },
+        color: Theme.of(context).colorScheme.onPrimaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        strokeWidth: 3.0,
+        child: BlocConsumer<HomeBloc, HomeState>(
+          buildWhen: (previous, current) => current is! HomeActionState,
+          listenWhen: (previous, current) => current is HomeActionState,
+          builder: (context, state) {
+            if (state is HomeSuccessState) {
+              //for set categories name to tab
+              final categoriesList = state.menuCategories.map((it) {
+                return Tab(text: it.categoryName);
+              }).toList();
+              //ui🗿
+              return Center(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TabBar(
+                    tabs: categoriesList,
+                    labelStyle: const TextStyle(fontFamily: 'Ktwod'),
+                    controller: TabController(
+                      animationDuration: const Duration(milliseconds: 400),
+                      length: state.menuCategories.length,
+                      vsync: this,
+                      initialIndex: _selectedTabIndex,
                     ),
-                    Expanded(
-                        child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount:
-                            orientation == Orientation.portrait ? 2 : 4,
-                        childAspectRatio: (itemWidth / itemHeight),
-                      ),
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      physics: Platform.isIOS
-                          ? const BouncingScrollPhysics(
-                              decelerationRate: ScrollDecelerationRate.fast)
-                          : const BouncingScrollPhysics(
-                              decelerationRate: ScrollDecelerationRate.fast),
-                      padding: const EdgeInsets.all(10.0),
-                      controller: _scrollController,
-                      itemCount: state.response.length,
-                      itemBuilder: (context, itemIndex) {
-                        if (_buttonStates.length <= itemIndex) {
-                          _buttonStates.add(false);
-                        }
-                        // indexing sorted data
-                        final item = state.response[itemIndex];
-                        final gridItem = _gridItemView(
-                          productId: item.id!,
-                          name: item.name,
-                          price: item.price,
-                          image: item.image,
-                          weight: item.weight,
-                          orientation: orientation,
-                          itemIndex: itemIndex,
-                        );
-                        return gridItem;
-                      },
-                    )),
-                  ],
-                ));
-              } else if (state is HomeLoadingState) {
-                return const Center(child: Skeleton());
-              } else if (state is HomeErrorState) {
-                return errorWidget(state.error, context);
-              }
-              return Container();
-            },
-            listener: (BuildContext context, HomeState state) {
-              if (state is HomeNavigateBackActionState) {
-                Navigator.of(context).pop();
-              }
-              if (state is HomeNavigateToOrdersScreenState) {
-                OrdersScreen.open(context);
-              }
-              if (state is HomeShowSnackMessageActionState) {
-                showSnackBar(state.message, context);
-              }
-            },
-          ),
+                    physics: const ClampingScrollPhysics(),
+                    isScrollable: true,
+                    unselectedLabelColor:
+                        Theme.of(context).colorScheme.onSurfaceVariant,
+                    splashBorderRadius:
+                        const BorderRadius.all(Radius.circular(120.0)),
+                    indicator: CustomTabIndicator(
+                        Theme.of(context).colorScheme.primary),
+                    indicatorPadding: const EdgeInsets.all(4.0),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    automaticIndicatorColorAdjustment: true,
+                    dividerColor: Colors.transparent,
+                    onTap: (categoryIndex) {
+                      setState(() {
+                        _selectedTabIndex = categoryIndex;
+                      });
+                    },
+                  ),
+                  Expanded(
+                      child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          orientation == Orientation.portrait ? 2 : 4,
+                      childAspectRatio: (itemWidth / itemHeight),
+                    ),
+                    shrinkWrap: true,
+                    scrollDirection: Axis.vertical,
+                    physics: Platform.isIOS
+                        ? const BouncingScrollPhysics(
+                            decelerationRate: ScrollDecelerationRate.fast)
+                        : const BouncingScrollPhysics(
+                            decelerationRate: ScrollDecelerationRate.fast),
+                    padding: const EdgeInsets.all(10.0),
+                    controller: _scrollController,
+                    itemCount: state.response.length,
+                    itemBuilder: (context, itemIndex) {
+                      if (_buttonStates.length <= itemIndex) {
+                        _buttonStates.add(false);
+                      }
+                      // indexing sorted data
+                      final item = state.response[itemIndex];
+                      final gridItem = _gridItemView(
+                        productId: item.id!,
+                        name: item.name,
+                        price: item.price,
+                        image: item.image,
+                        weight: item.weight,
+                        orientation: orientation,
+                        itemIndex: itemIndex,
+                      );
+                      return gridItem;
+                    },
+                  )),
+                ],
+              ));
+            } else if (state is HomeLoadingState) {
+              return const Center(child: Skeleton());
+            } else if (state is HomeErrorState) {
+              return errorWidget(state.error, context);
+            }
+            return Container();
+          },
+          listener: (BuildContext context, HomeState state) {
+            if (state is HomeNavigateBackActionState) {
+              Navigator.of(context).pop();
+            }
+            if (state is HomeNavigateToOrdersScreenState) {
+              OrdersScreen.open(context);
+            }
+            if (state is HomeShowSnackMessageActionState) {
+              showSnackBar(state.message, context);
+            }
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -264,26 +262,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14.0),
-                child: CachedNetworkImage(
-                  imageUrl: image,
-                  width: fillMaxWidth(context),
-                  height: fillMaxHeight(context) * 0.156,
-                  fit: BoxFit.fill,
-                  progressIndicatorBuilder: (context, url, downloadProgress) =>
-                      Container(
-                    decoration: BoxDecoration(
-                      gradient: shimmerEffect(
-                        context,
-                        AnimationController(
-                          vsync: this,
-                          duration: const Duration(seconds: 1),
-                        )..repeat(reverse: true),
-                      ),
-                    ),
-                  ),
-                ),
+              CachedImageView(
+                imageUrl: image,
+                width: fillMaxWidth(context),
+                height: fillMaxHeight(context) * 0.156,
+                controller: AnimationController(
+                  vsync: this,
+                  duration: const Duration(milliseconds: 1500),
+                )..repeat(reverse: true),
+                borderRadius: 14.0,
               ),
               const SizedBox(height: 8.0),
               Expanded(

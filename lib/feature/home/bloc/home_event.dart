@@ -5,6 +5,12 @@ sealed class HomeEvent {}
 
 class HomeOnGetMenuListEvent extends HomeEvent {}
 
+class HomeOnButtonClickedEvent extends HomeEvent {
+  final int index;
+
+  HomeOnButtonClickedEvent(this.index);
+}
+
 class HomeOnRefreshEvent extends HomeEvent {}
 
 class HomeOnInsertOrDeleteOrdersEvent extends HomeEvent {

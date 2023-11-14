@@ -15,14 +15,30 @@ class TablesOnPasswordSubmitEvent extends TablesEvent {
   });
 }
 
-class TablesOnChangeTextFieldEvent extends TablesEvent {
-  final BuildContext context;
+class TablesOnChangeTableNumberEvent extends TablesEvent {
+  final List<TablePasswordsEntity> tablePasswords;
+  final String tableNumber;
+  final int selectedItem;
 
-  TablesOnChangeTextFieldEvent(this.context);
+  TablesOnChangeTableNumberEvent({
+    required this.tablePasswords,
+    required this.tableNumber,
+    required this.selectedItem,
+  });
 }
 
 class TablesOnNavigateToHomeScreenEvent extends TablesEvent {}
 
-class TablesOnShowChangeTableDialogEvent extends TablesEvent {}
+class TablesOnShowChangeTableDialogEvent extends TablesEvent {
+  final List<int> tableNumbers;
+  final List<TablePasswordsEntity> tablePasswords;
+  final String currentTableNumber;
+
+  TablesOnShowChangeTableDialogEvent({
+    required this.tableNumbers,
+    required this.tablePasswords,
+    required this.currentTableNumber,
+  });
+}
 
 class TablesOnCheckAndSubmitEvent extends TablesEvent {}

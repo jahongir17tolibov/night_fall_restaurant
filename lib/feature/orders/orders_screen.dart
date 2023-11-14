@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,8 +11,8 @@ import 'package:night_fall_restaurant/domain/model/order_products_model.dart';
 import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/orders/bloc/orders_bloc.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
+import 'package:night_fall_restaurant/utils/ui_components/cached_image_view.dart';
 import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
-import 'package:night_fall_restaurant/utils/ui_components/shimmer_gradient.dart';
 import 'package:night_fall_restaurant/utils/ui_components/show_snack_bar.dart';
 import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
 import 'package:provider/provider.dart';
@@ -142,16 +141,72 @@ class _OrdersScreenState extends State<OrdersScreen>
             if (state is OrdersListenOnBackNavigateState) {
               HomeScreen.close(context);
             }
-            if (state is OrdersOnShowSnackMessageActionState) {
+            if (state is OrdersShowSnackMessageActionState) {
               showSnackBar(state.message, context);
+            }
+            if (state is OrdersShowSuccessfullySentActionState) {
+              _showWhenSentDialog(state.lottiePath, state.statusText);
             }
           },
         ),
       ),
       onWillPop: () async {
         context.read<OrdersBloc>().add(OrdersOnNavigateBackEvent());
-        return true;
+        return false;
       },
+    );
+  }
+
+  void _showWhenSentDialog(String lottiePath, String status) {
+    showAdaptiveDialog(
+      context: context,
+      useSafeArea: true,
+      barrierDismissible: true,
+      builder: (_) => AlertDialog(
+        contentPadding: const EdgeInsets.all(10.0),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.surface,
+          ),
+          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+        ),
+        backgroundColor:
+            Theme.of(context).colorScheme.primaryContainer.withOpacity(0.92),
+        elevation: 4.0,
+        content: SizedBox(
+          width: fillMaxWidth(context),
+          height: fillMaxHeight(context) * 0.4,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Lottie.asset(
+                lottiePath,
+                width: 260.0,
+                height: 260.0,
+                fit: BoxFit.cover,
+              ),
+              const SizedBox(height: 12.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 6.0,
+                  horizontal: 12.0,
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 18.0,
+                    fontFamily: 'Ktwod',
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -214,132 +269,124 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
 
     /// imageView
-    Widget productsImage = ClipRRect(
-      borderRadius: BorderRadius.circular(14.0),
-      child: CachedNetworkImage(
-        imageUrl: item.image,
-        width: fillMaxWidth(context) * 0.175,
-        height: fillMaxHeight(context) * 0.1,
-        fit: BoxFit.fill,
-        progressIndicatorBuilder: (context, url, downloadProgress) => Container(
-          decoration: BoxDecoration(
-            gradient: shimmerEffect(
-              context,
-              AnimationController(
-                vsync: this,
-                duration: const Duration(seconds: 1),
-              )..repeat(reverse: true),
-            ),
-          ),
-        ),
-      ),
+    Widget productsImage = CachedImageView(
+      imageUrl: item.image,
+      width: fillMaxWidth(context) * 0.175,
+      height: fillMaxHeight(context) * 0.1,
+      controller: AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1500),
+      )..repeat(reverse: true),
+      borderRadius: 14.0,
     );
 
     /// list tile
-    return ListTile(
-      tileColor: Theme.of(context).colorScheme.surface,
-      splashColor: Theme.of(context).colorScheme.secondaryContainer,
-      leading: productsImage,
-      trailing: amountProductsWidget,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      title: TextView(
-        text: item.name,
-        textColor: Theme.of(context).colorScheme.onSurface,
-        textSize: 22.0,
-        maxLines: 1,
-        weight: FontWeight.w500,
-      ),
-      subtitle: TextView(
-        text: item.price,
-        textColor: Theme.of(context).colorScheme.onSurface,
-        textSize: 12.5,
-        maxLines: 1,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: ListTile(
+        tileColor: Theme.of(context).colorScheme.surface,
+        splashColor: Theme.of(context).colorScheme.secondaryContainer,
+        leading: productsImage,
+        trailing: amountProductsWidget,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        title: TextView(
+          text: item.name,
+          textColor: Theme.of(context).colorScheme.onSurface,
+          textSize: 22.0,
+          maxLines: 1,
+          weight: FontWeight.w500,
+        ),
+        subtitle: TextView(
+          text: item.price,
+          textColor: Theme.of(context).colorScheme.onSurface,
+          textSize: 12.5,
+          maxLines: 1,
+        ),
       ),
     );
   }
 
   /// send orders side
-  Widget _ordersListCard({required List<OrderProductsModel> list}) {
-    return Card(
-      color: Theme.of(context).colorScheme.secondary,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      margin: const EdgeInsets.all(12.0),
-      elevation: 6.0,
-      child: Container(
-        width: fillMaxWidth(context),
-        height: fillMaxHeight(context) * 0.25,
-        padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 18.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                  itemCount: list.length,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final item = list[index];
-                    return _ordersRowCardItem(
-                      name: item.name,
-                      count: item.quantity.toString(),
-                      price: item.price,
-                    );
-                  }),
-            ),
-            const SizedBox(height: 6.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                TextView(
-                  text: 'Umumiy:  ',
-                  textColor: Theme.of(context).colorScheme.onSecondary,
-                  textSize: 20.0,
-                  maxLines: 1,
-                ),
-                TextView(
-                  text:
-                      "${NumberFormat.decimalPatternDigits().format(_pricesCount)} so`m",
-                  textColor: Theme.of(context).colorScheme.onSecondary,
-                  textSize: 20.0,
-                  weight: FontWeight.w700,
-                  maxLines: 1,
-                )
-              ],
-            ),
-            const SizedBox(height: 8.0),
-            MaterialButton(
-                onPressed: () {
-                  context
-                      .read<OrdersBloc>()
-                      .add(OrdersOnSendProductsToFireStoreEvent(list));
-                },
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                minWidth: fillMaxWidth(context),
-                height: fillMaxHeight(context) * 0.05,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 2.0,
-                    color: Theme.of(context).colorScheme.shadow,
-                  ),
-                  borderRadius: BorderRadius.circular(16.0),
-                ),
-                elevation: 4.0,
-                child: TextView(
-                  text: 'Buyurtma berish',
-                  textColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                  maxLines: 1,
-                  textSize: 18.0,
-                ))
-          ],
+  Widget _ordersListCard({required List<OrderProductsModel> list}) => Card(
+        color: Theme.of(context).colorScheme.secondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
         ),
-      ),
-    );
-  }
+        margin: const EdgeInsets.all(12.0),
+        elevation: 6.0,
+        child: Container(
+          width: fillMaxWidth(context),
+          height: fillMaxHeight(context) * 0.25,
+          padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 18.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(
+                child: ListView.builder(
+                    itemCount: list.length,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final item = list[index];
+                      return _ordersRowCardItem(
+                        name: item.name,
+                        count: item.quantity.toString(),
+                        price: item.price,
+                      );
+                    }),
+              ),
+              const SizedBox(height: 6.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  TextView(
+                    text: 'Umumiy:  ',
+                    textColor: Theme.of(context).colorScheme.onSecondary,
+                    textSize: 20.0,
+                    maxLines: 1,
+                  ),
+                  TextView(
+                    text:
+                        "${NumberFormat.decimalPatternDigits().format(_pricesCount)} so`m",
+                    textColor: Theme.of(context).colorScheme.onSecondary,
+                    textSize: 20.0,
+                    weight: FontWeight.w700,
+                    maxLines: 1,
+                  )
+                ],
+              ),
+              const SizedBox(height: 8.0),
+              MaterialButton(
+                  onPressed: () {
+                    context
+                        .read<OrdersBloc>()
+                        .add(OrdersOnSendProductsToFireStoreEvent(list));
+                  },
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  minWidth: fillMaxWidth(context),
+                  height: fillMaxHeight(context) * 0.05,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 2.0,
+                      color: Theme.of(context).colorScheme.shadow,
+                    ),
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  elevation: 4.0,
+                  child: TextView(
+                    text: 'Buyurtma berish',
+                    textColor:
+                        Theme.of(context).colorScheme.onSecondaryContainer,
+                    maxLines: 1,
+                    textSize: 18.0,
+                  ))
+            ],
+          ),
+        ),
+      );
 
   Widget _ordersRowCardItem({
     required String name,

@@ -2,6 +2,7 @@
 
 class MenuList {
   final String name;
+  final String fireId;
   final String image;
   final String price;
   final String weight;
@@ -9,6 +10,7 @@ class MenuList {
 
   MenuList({
     required this.name,
+    required this.fireId,
     required this.image,
     required this.price,
     required this.weight,
@@ -17,6 +19,7 @@ class MenuList {
 
   Map<String, dynamic> toMap() => <String, dynamic>{
         'name': name,
+        'fireId': fireId,
         'image': image,
         'price': price,
         'weight': weight,
@@ -25,6 +28,7 @@ class MenuList {
 
   factory MenuList.fromMap(Map<String, dynamic> map) => MenuList(
         name: map['name'],
+        fireId: map['fireId'],
         image: map['image'],
         price: map['price'],
         weight: map['weight'],
@@ -37,6 +41,7 @@ class MenuList {
       other is MenuList &&
           runtimeType == other.runtimeType &&
           name == other.name &&
+          fireId == other.fireId &&
           image == other.image &&
           price == other.price &&
           weight == other.weight &&
@@ -45,6 +50,7 @@ class MenuList {
   @override
   int get hashCode =>
       name.hashCode ^
+      fireId.hashCode ^
       image.hashCode ^
       price.hashCode ^
       weight.hashCode ^

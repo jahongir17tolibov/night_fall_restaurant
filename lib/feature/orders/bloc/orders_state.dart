@@ -19,6 +19,7 @@ class OrdersIsEmptyState extends OrdersState {
 
 class OrdersErrorState extends OrdersState {
   final String error;
+
   OrdersErrorState(this.error) : super();
 }
 
@@ -27,12 +28,20 @@ sealed class OrdersActionState extends OrdersState {}
 
 class OrdersListenOnBackNavigateState extends OrdersActionState {}
 
-class OrdersOnShowSnackMessageActionState extends OrdersActionState {
+class OrdersShowSnackMessageActionState extends OrdersActionState {
   final String message;
 
-  OrdersOnShowSnackMessageActionState(this.message);
+  OrdersShowSnackMessageActionState(this.message);
 }
 
+class OrdersShowSuccessfullySentActionState extends OrdersActionState {
+  final String lottiePath;
+  final String statusText;
+
+  OrdersShowSuccessfullySentActionState(this.lottiePath, this.statusText);
+}
+
+/// keyin...
 class OrdersAddValueActionState extends OrdersActionState {
   final int value;
 

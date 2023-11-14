@@ -7,11 +7,7 @@ class OrdersOnGetProductsEvent extends OrdersEvent {}
 
 class OrdersOnClearProductsEvent extends OrdersEvent {}
 
-class OrdersOnNavigateBackEvent extends OrdersEvent {
-  final bool isButton;
-
-  OrdersOnNavigateBackEvent({this.isButton = true});
-}
+class OrdersOnNavigateBackEvent extends OrdersEvent {}
 
 class OrdersOnSendProductsToFireStoreEvent extends OrdersEvent {
   final List<OrderProductsModel> orders;

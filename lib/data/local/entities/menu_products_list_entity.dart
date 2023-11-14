@@ -5,6 +5,7 @@ import 'package:night_fall_restaurant/data/remote/model/menu_list.dart';
 class MenuProductsEntity {
   static const CM_ID = "menu_products_id";
   static const CM_PRODUCT_NAME = "product_name";
+  static const CM_FIRE_ID = "fire_id";
   static const CM_IMAGE = "product_image";
   static const CM_PRICE = "product_price";
   static const CM_WEIGHT = "product_weight";
@@ -13,6 +14,7 @@ class MenuProductsEntity {
 
   final int? id;
   final String name;
+  final String fireId;
   final String image;
   final String price;
   final String weight;
@@ -21,6 +23,7 @@ class MenuProductsEntity {
   MenuProductsEntity({
     this.id,
     required this.name,
+    required this.fireId,
     required this.image,
     required this.price,
     required this.weight,
@@ -30,6 +33,7 @@ class MenuProductsEntity {
   Map<String, dynamic> toMap() => <String, dynamic>{
         CM_ID: id,
         CM_PRODUCT_NAME: name,
+        CM_FIRE_ID: fireId,
         CM_IMAGE: image,
         CM_PRICE: price,
         CM_WEIGHT: weight,
@@ -40,6 +44,7 @@ class MenuProductsEntity {
       MenuProductsEntity(
         id: map[CM_ID],
         name: map[CM_PRODUCT_NAME],
+        fireId: map[CM_FIRE_ID],
         image: map[CM_IMAGE],
         price: map[CM_PRICE],
         weight: map[CM_WEIGHT],
@@ -51,6 +56,7 @@ class MenuProductsEntity {
   }) =>
       MenuProductsEntity(
         name: menuList.name,
+        fireId: menuList.fireId,
         image: menuList.image,
         price: menuList.price,
         weight: menuList.weight,
@@ -60,6 +66,7 @@ class MenuProductsEntity {
   MenuProductsEntity copyWith({
     int? id,
     required String? name,
+    required String? fireId,
     required String? image,
     required String? price,
     required String? weight,
@@ -68,6 +75,7 @@ class MenuProductsEntity {
       MenuProductsEntity(
         id: id ?? this.id,
         name: name ?? this.name,
+        fireId: fireId ?? this.fireId,
         image: image ?? this.image,
         price: price ?? this.price,
         weight: weight ?? this.weight,
@@ -81,6 +89,7 @@ class MenuProductsEntity {
           runtimeType == other.runtimeType &&
           id == other.id &&
           name == other.name &&
+          fireId == other.fireId &&
           image == other.image &&
           price == other.price &&
           weight == other.weight &&
@@ -90,6 +99,7 @@ class MenuProductsEntity {
   int get hashCode =>
       id.hashCode ^
       name.hashCode ^
+      fireId.hashCode ^
       image.hashCode ^
       price.hashCode ^
       weight.hashCode ^

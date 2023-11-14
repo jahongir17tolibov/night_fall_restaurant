@@ -4,6 +4,7 @@ import 'package:night_fall_restaurant/data/local/entities/orders_entity.dart';
 class OrderProductsModel extends ChangeNotifier {
   final int? id;
   final String productCategoryId;
+  final String fireId;
   final String name;
   final String image;
   final String price;
@@ -16,6 +17,7 @@ class OrderProductsModel extends ChangeNotifier {
     this.id,
     required this.productCategoryId,
     required this.name,
+    required this.fireId,
     required this.image,
     required this.price,
     required this.weight,
@@ -44,6 +46,7 @@ class OrderProductsModel extends ChangeNotifier {
         'id': id,
         'productCategoryId': productCategoryId,
         'name': name,
+        'fireId': fireId,
         'image': image,
         'price': price,
         'weight': weight,
@@ -55,6 +58,7 @@ class OrderProductsModel extends ChangeNotifier {
         id: map['id'],
         productCategoryId: map['productCategoryId'],
         name: map['name'],
+        fireId: map['fireId'],
         image: map['image'],
         price: map['price'],
         weight: map['weight'],
@@ -65,6 +69,7 @@ class OrderProductsModel extends ChangeNotifier {
       OrderProductsModel(
         productCategoryId: ordersEntity.productCategoryId,
         name: ordersEntity.name,
+        fireId: ordersEntity.fireId,
         image: ordersEntity.image,
         price: ordersEntity.price,
         weight: ordersEntity.weight,
@@ -79,6 +84,7 @@ class OrderProductsModel extends ChangeNotifier {
           id == other.id &&
           productCategoryId == other.productCategoryId &&
           name == other.name &&
+          fireId == other.fireId &&
           image == other.image &&
           price == other.price &&
           weight == other.weight &&
@@ -89,6 +95,7 @@ class OrderProductsModel extends ChangeNotifier {
       id.hashCode ^
       productCategoryId.hashCode ^
       name.hashCode ^
+      fireId.hashCode ^
       image.hashCode ^
       price.hashCode ^
       weight.hashCode ^

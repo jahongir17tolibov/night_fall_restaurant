@@ -27,16 +27,22 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     required this.forChecking,
     required this.sharedPreferences,
   }) : super(TablesLoadingState()) {
-    on<TablesOnGetPasswordsEvent>(getTablesPassword);
+    on<TablesOnGetPasswordsEvent>(_getTablesPassword);
 
-    on<TablesOnPasswordSubmitEvent>(passwordSubmitEvent);
+    on<TablesOnPasswordSubmitEvent>(_passwordSubmitEvent);
 
-    on<TablesOnNavigateToHomeScreenEvent>(navigateToHomeEvent);
+    on<TablesOnNavigateToHomeScreenEvent>(_navigateToHomeEvent);
 
-    on<TablesOnShowChangeTableDialogEvent>(showChangeTableDialogEvent);
+    on<TablesOnShowChangeTableDialogEvent>(_showChangeTableDialogEvent);
+
+    on<TablesOnChangeTableNumberEvent>(_changeTableNumberPickerEvent);
   }
 
-  Future<void> getTablesPassword(
+  int _selectedTable = 0;
+
+  int get selectedTable => _selectedTable;
+
+  Future<void> _getTablesPassword(
     TablesOnGetPasswordsEvent event,
     Emitter<TablesState> emit,
   ) async {
@@ -44,51 +50,48 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     final hasConnection = await InternetConnectionChecker().hasConnection;
     try {
       emit(TablesLoadingState());
+      final fetchedTables = await _fetchTablesPassword(emit);
       if (hasConnection) {
         syncTables;
-        await fetchTablesPassword(emit);
+        fetchedTables;
       } else {
-        await fetchTablesPassword(emit);
+        fetchedTables;
       }
     } catch (e) {
       emit(TablesErrorState(error: e.toString()));
     }
   }
 
-  Future<void> fetchTablesPassword(Emitter<TablesState> emit) async {
-    final tablesData = await tablesPasswordUseCase.call();
-    switch (tablesData) {
-      case SUCCESS():
-        {
-          final getTableNumber = await sharedPreferences.getTableNumber();
-          emit(TablesSuccessState(
-            tablePasswords: tablesData.data,
-            tableNumber: getTableNumber.toString(),
-          ));
-        }
-        break;
-
-      case FAILURE():
-        emit(TablesErrorState(error: tablesData.exception.toString()));
-        break;
-    }
+  Future<void> _changeTableNumberPickerEvent(
+    TablesOnChangeTableNumberEvent event,
+    Emitter<TablesState> emit,
+  ) async {
+    _selectedItemChanged(event.selectedItem);
+    emit(TablesSuccessState(
+      tablePasswords: event.tablePasswords,
+      tableNumber: event.tableNumber,
+    ));
   }
 
-  Future<void> navigateToHomeEvent(
+  Future<void> _showChangeTableDialogEvent(
+    TablesOnShowChangeTableDialogEvent event,
+    Emitter<TablesState> emit,
+  ) async {
+    emit(TablesShowChangeTableDialogActionState(
+      tableNumbers: event.tableNumbers,
+      tablePasswords: event.tablePasswords,
+      currentTableNumber: event.currentTableNumber,
+    ));
+  }
+
+  Future<void> _navigateToHomeEvent(
     TablesOnNavigateToHomeScreenEvent event,
     Emitter<TablesState> emit,
   ) async {
     emit(TablesNavigateToHomeScreenActionState());
   }
 
-  Future<void> showChangeTableDialogEvent(
-    TablesOnShowChangeTableDialogEvent event,
-    Emitter<TablesState> emit,
-  ) async {
-    emit(TablesShowChangeTableDialogActionState());
-  }
-
-  Future<void> passwordSubmitEvent(
+  Future<void> _passwordSubmitEvent(
     TablesOnPasswordSubmitEvent event,
     Emitter<TablesState> emit,
   ) async {
@@ -119,8 +122,6 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     String tablePassword,
   ) {
     for (var it in tablesData) {
-      // print(
-      //     '${it.tableNumber} and ${it.tablePassword} and $tablePassword and $tableNumber');
       if (it.tableNumber.toString() == tableNumber &&
           it.tablePassword == tablePassword) {
         sharedPreferences.setTableNumber(it.tableNumber);
@@ -128,5 +129,29 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
       }
     }
     return false;
+  }
+
+  Future<void> _fetchTablesPassword(Emitter<TablesState> emit) async {
+    final tablesData = await tablesPasswordUseCase.call();
+    switch (tablesData) {
+      case SUCCESS():
+        {
+          final getTableNumber = await sharedPreferences.getTableNumber();
+          _selectedTable = getTableNumber - 1;
+          emit(TablesSuccessState(
+            tablePasswords: tablesData.data,
+            tableNumber: getTableNumber.toString(),
+          ));
+        }
+        break;
+
+      case FAILURE():
+        emit(TablesErrorState(error: tablesData.exception.toString()));
+        break;
+    }
+  }
+
+  void _selectedItemChanged(int selectedItem) {
+    _selectedTable = selectedItem;
   }
 }

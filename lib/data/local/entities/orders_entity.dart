@@ -6,6 +6,7 @@ class OrdersEntity {
   static const CM_ID = "orders_entity_id";
   static const CM_PRODUCT_CATEGORY_ID = "product_category_id";
   static const CM_ORDER_PRODUCT_ID = "order_product_id";
+  static const CM_ORDER_PRODUCT_FIRE_ID = "order_product_fire_id";
   static const CM_ORDER_NAME = "order_name";
   static const CM_IMAGE = "order_image";
   static const CM_PRICE = "order_price";
@@ -16,6 +17,7 @@ class OrdersEntity {
   final String productCategoryId;
   final String orderProductId;
   final String name;
+  final String fireId;
   final String image;
   final String price;
   final String weight;
@@ -24,6 +26,7 @@ class OrdersEntity {
     this.id,
     required this.productCategoryId,
     required this.orderProductId,
+    required this.fireId,
     required this.name,
     required this.image,
     required this.price,
@@ -34,6 +37,7 @@ class OrdersEntity {
         CM_ID: id,
         CM_PRODUCT_CATEGORY_ID: productCategoryId,
         CM_ORDER_PRODUCT_ID: orderProductId,
+        CM_ORDER_PRODUCT_FIRE_ID: fireId,
         CM_ORDER_NAME: name,
         CM_IMAGE: image,
         CM_PRICE: price,
@@ -44,6 +48,7 @@ class OrdersEntity {
         id: map[CM_ID],
         productCategoryId: map[CM_PRODUCT_CATEGORY_ID],
         orderProductId: map[CM_ORDER_PRODUCT_ID],
+        fireId: map[CM_ORDER_PRODUCT_FIRE_ID],
         name: map[CM_ORDER_NAME],
         image: map[CM_IMAGE],
         price: map[CM_PRICE],
@@ -52,10 +57,12 @@ class OrdersEntity {
 
   factory OrdersEntity.fromMenuProductsListDto({
     required MenuProductsEntity menuProductsList,
+    required String fireIdUnique,
   }) =>
       OrdersEntity(
         productCategoryId: menuProductsList.productCategoryId,
         orderProductId: menuProductsList.id.toString(),
+        fireId: fireIdUnique,
         name: menuProductsList.name,
         image: menuProductsList.image,
         price: menuProductsList.price,
@@ -70,6 +77,7 @@ class OrdersEntity {
           id == other.id &&
           orderProductId == other.orderProductId &&
           productCategoryId == other.productCategoryId &&
+          fireId == other.fireId &&
           name == other.name &&
           image == other.image &&
           price == other.price &&
@@ -79,6 +87,7 @@ class OrdersEntity {
   int get hashCode =>
       id.hashCode ^
       orderProductId.hashCode ^
+      fireId.hashCode ^
       productCategoryId.hashCode ^
       name.hashCode ^
       image.hashCode ^

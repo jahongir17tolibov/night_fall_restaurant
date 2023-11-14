@@ -94,6 +94,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     OrdersOnSendProductsToFireStoreEvent event,
     Emitter<OrdersState> emit,
   ) async {
+    const String lottiePath = "assets/anim/waiting_anim.json";
     try {
       final int tableNumber = await sharedPreferences.getTableNumber();
       final hasConnection = await InternetConnectionChecker().hasConnection;
@@ -116,14 +117,18 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
         );
 
         await repository.sendOrdersToFireStore(sendOrders);
-        emit(OrdersOnShowSnackMessageActionState(
+        emit(OrdersShowSnackMessageActionState(
           'orders from the table $tableNumber were sent successfully',
         ));
+        emit(OrdersShowSuccessfullySentActionState(
+          lottiePath,
+          "Buyurtmangiz qabul qilindi iltimos kutib turing",
+        ));
       } else {
-        emit(OrdersOnShowSnackMessageActionState("Check internet connection"));
+        emit(OrdersShowSnackMessageActionState("Check internet connection!!!"));
       }
     } catch (e) {
-      emit(OrdersOnShowSnackMessageActionState(e.toString()));
+      emit(OrdersShowSnackMessageActionState(e.toString()));
     }
   }
 
@@ -132,9 +137,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     OrdersOnNavigateBackEvent event,
     Emitter<OrdersState> emit,
   ) async {
-    if (event.isButton) {
-      emit(OrdersListenOnBackNavigateState());
-    }
+    emit(OrdersListenOnBackNavigateState());
     _pricesCount = 0;
   }
 
