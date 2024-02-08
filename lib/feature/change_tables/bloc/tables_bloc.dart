@@ -67,9 +67,8 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
     Emitter<TablesState> emit,
   ) async {
     _selectedItemChanged(event.selectedItem);
-    emit(TablesSuccessState(
-      tablePasswords: event.tablePasswords,
-      tableNumber: event.tableNumber,
+    emit(TablesShowChangeTableDialogActionState(
+      tableNumbers: event.tableNumbers,
     ));
   }
 
@@ -79,8 +78,6 @@ class TablesBloc extends Bloc<TablesEvent, TablesState> {
   ) async {
     emit(TablesShowChangeTableDialogActionState(
       tableNumbers: event.tableNumbers,
-      tablePasswords: event.tablePasswords,
-      currentTableNumber: event.currentTableNumber,
     ));
   }
 

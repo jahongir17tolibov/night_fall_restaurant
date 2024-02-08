@@ -51,6 +51,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeOnNavigateToOrdersScreenEvent>(_navigateToOrdersEvent);
   }
 
+  late int _categoryTabLength;
+
+  int get categoryTabLength => _categoryTabLength;
+
   Future<void> _onGetMenuProductsEvent(
     HomeOnGetMenuListEvent event,
     Emitter<HomeState> emit,
@@ -137,8 +141,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     switch (menuProducts) {
       case SUCCESS():
         {
+          _categoryTabLength = categories.length;
           emit(HomeSuccessState(
-            response: menuProducts.data,
+            menuProducts: menuProducts.data,
             menuCategories: categories,
           ));
         }

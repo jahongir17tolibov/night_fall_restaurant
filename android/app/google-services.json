@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1025632038015",
+    "firebase_url": "https://night-fall-restaurant-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "night-fall-restaurant",
     "storage_bucket": "night-fall-restaurant.appspot.com"
   },
@@ -12,7 +13,12 @@
           "package_name": "com.example.night_fall_restaurant"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDR45Dco6P_LqE7YYx1vTlu_KDVMSqwXgo"
@@ -20,7 +26,143 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1025632038015-2pnialiudrmfn5rif75ia2ampgglqbh8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nightFallRestaurant"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025632038015:android:65e4ced50612e65941234a",
+        "android_client_info": {
+          "package_name": "com.example.night_fall_restaurant_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR45Dco6P_LqE7YYx1vTlu_KDVMSqwXgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1025632038015-2pnialiudrmfn5rif75ia2ampgglqbh8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nightFallRestaurant"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025632038015:android:2dd4b84fc7d8497e41234a",
+        "android_client_info": {
+          "package_name": "com.jt17.remote"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025632038015-ian9l5un0446bgr5rim1hufqoj123sie.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jt17.remote",
+            "certificate_hash": "9f47f91563e1de73276c5d9f9d4dcd02ca8ca433"
+          }
+        },
+        {
+          "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR45Dco6P_LqE7YYx1vTlu_KDVMSqwXgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1025632038015-2pnialiudrmfn5rif75ia2ampgglqbh8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nightFallRestaurant"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025632038015:android:755bce6f63e5d60941234a",
+        "android_client_info": {
+          "package_name": "com.jt17.tensortoolsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025632038015-m151tdof1u0jfruopaqm1aqs9lkajovp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jt17.tensortoolsapp",
+            "certificate_hash": "9f47f91563e1de73276c5d9f9d4dcd02ca8ca433"
+          }
+        },
+        {
+          "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR45Dco6P_LqE7YYx1vTlu_KDVMSqwXgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025632038015-25odnt31o6ooovnn038qd0d81jre01uf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1025632038015-2pnialiudrmfn5rif75ia2ampgglqbh8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nightFallRestaurant"
+              }
+            }
+          ]
         }
       }
     }

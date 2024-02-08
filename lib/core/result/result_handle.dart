@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 sealed class Result<T> {
   const Result();
 }

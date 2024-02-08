@@ -18,13 +18,13 @@ class AppSharedPreferences {
     return prefs.setInt(TABLE_NUMBER_KEY, tableNumber);
   }
 
-  Future<bool> getAppTheme() async {
+  Future<String> getAppTheme() async {
     final prefs = await getInstance;
-    return prefs.getBool(THEME_KEY) ?? false;
+    return prefs.getString(THEME_KEY) ?? 'AppThemeMode.light';
   }
 
-  Future<bool> setAppTheme(bool isDark) async {
+  Future<bool> setAppTheme(String theme) async {
     final prefs = await getInstance;
-    return prefs.setBool(THEME_KEY, !isDark);
+    return prefs.setString(THEME_KEY, theme);
   }
 }

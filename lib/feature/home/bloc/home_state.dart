@@ -8,16 +8,13 @@ class HomeLoadingState extends HomeState {
 }
 
 class HomeSuccessState extends HomeState {
-  final List<MenuProductsEntity> response;
+  final List<MenuProductsEntity> menuProducts;
   final List<MenuCategoriesEntity> menuCategories;
-  final Map<int, bool> buttonStates;
 
   HomeSuccessState({
-    required this.response,
+    required this.menuProducts,
     required this.menuCategories,
-    Map<int, bool>? buttonStates,
-  }) : buttonStates = buttonStates ??
-            {for (var item in response) response.indexOf(item): false};
+  });
 }
 
 class HomeErrorState extends HomeState {

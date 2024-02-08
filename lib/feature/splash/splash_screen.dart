@@ -1,9 +1,11 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:night_fall_restaurant/feature/main_tables/main_table_screen.dart';
+import 'package:night_fall_restaurant/feature/change_tables/main_table_screen.dart';
 
 class SplashScreen extends StatelessWidget {
-  static const splashRoute = '/';
+  static const ROUTE_NAME = '/';
 
   const SplashScreen({super.key});
 
@@ -32,9 +34,10 @@ class SplashScreen extends StatelessWidget {
                 child: Text(
                   'Night fall Restaurant',
                   style: TextStyle(
-                      color: textColor,
-                      fontSize: 36.0,
-                      fontFamily: 'GreatVibes'),
+                    color: textColor,
+                    fontSize: 36.0,
+                    fontFamily: 'GreatVibes',
+                  ),
                 ),
               ),
             )

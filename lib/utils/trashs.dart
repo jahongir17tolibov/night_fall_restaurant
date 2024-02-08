@@ -139,4 +139,66 @@
   ];
 *
 *
+* // home
+* Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TabBar(
+                    tabs: categoriesList,
+                    labelStyle: const TextStyle(fontFamily: 'Ktwod'),
+                    controller: _tabController,
+                    physics: const ClampingScrollPhysics(),
+                    isScrollable: true,
+                    unselectedLabelColor:
+                        Theme.of(context).colorScheme.onSurfaceVariant,
+                    splashBorderRadius:
+                        const BorderRadius.all(Radius.circular(120.0)),
+                    indicator: CustomTabIndicator(
+                      Theme.of(context).colorScheme.primary,
+                    ),
+                    indicatorPadding: const EdgeInsets.all(4.0),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    automaticIndicatorColorAdjustment: true,
+                    dividerColor: Colors.transparent,
+                    onTap: (categoryIndex) {},
+                  ),
+                  Expanded(
+                      child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          orientation == Orientation.portrait ? 2 : 4,
+                      childAspectRatio: (itemWidth / itemHeight),
+                    ),
+                    shrinkWrap: true,
+                    scrollDirection: Axis.vertical,
+                    physics: Platform.isIOS
+                        ? const BouncingScrollPhysics(
+                            decelerationRate: ScrollDecelerationRate.fast)
+                        : const BouncingScrollPhysics(
+                            decelerationRate: ScrollDecelerationRate.fast),
+                    padding: const EdgeInsets.all(10.0),
+                    controller: _scrollController,
+                    itemCount: state.response.length,
+                    itemBuilder: (context, itemIndex) {
+                      if (_buttonStates.length <= itemIndex) {
+                        _buttonStates.add(false);
+                      }
+                      // indexing sorted data
+                      final item = state.response[itemIndex];
+                      final gridItem = _gridItemView(
+                        productId: item.id!,
+                        name: item.name,
+                        price: item.price,
+                        image: item.image,
+                        weight: item.weight,
+                        orientation: orientation,
+                        itemIndex: itemIndex,
+                      );
+                      return gridItem;
+                    },
+                  )),
+                ],
+              );
+*
+*
 * */

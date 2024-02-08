@@ -2,6 +2,7 @@ import 'package:night_fall_restaurant/data/local/db/dao/orders_db_dao.dart';
 import 'package:night_fall_restaurant/data/local/entities/orders_entity.dart';
 import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/send_orders_model.dart';
 import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../../core/result/result_handle.dart';
 import '../../use_cases/send_orders_to_fire_store_use_case.dart';
@@ -16,22 +17,25 @@ class OrdersRepositoryImpl extends OrdersRepository {
   });
 
   @override
+  Stream<Result<List<OrdersEntity>>> getProductsFromOrdersDb() async* {
+    List<OrdersEntity> orderProducts = List.empty();
+    final ordersStream = Rx.fromCallable(() => dao.getProductsFromOrders());
+
+    ordersStream.map((orders) => orderProducts = orders);
+    try {
+      yield SUCCESS(data: orderProducts);
+    } on Exception catch (e) {
+      yield FAILURE(exception: e);
+    }
+  }
+
+  @override
   Future<void> clearAllProductsFromOrdersDb() async =>
       await dao.clearAllProductsFromOrders();
 
   @override
   Future<void> deleteProductFromOrderDb(String orderProductId) async =>
       await dao.deleteProductFromOrders(orderProductId);
-
-  @override
-  Future<Result<List<OrdersEntity>>> getProductsFromOrdersDb() async {
-    final orderProducts = await dao.getProductsFromOrders();
-    try {
-      return SUCCESS(data: orderProducts);
-    } on Exception catch (e) {
-      return FAILURE(exception: e);
-    }
-  }
 
   @override
   Future<void> insertProductToOrdersDb(OrdersEntity ordersEntity) async =>

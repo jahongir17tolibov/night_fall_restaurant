@@ -40,16 +40,3 @@ class OrdersShowSuccessfullySentActionState extends OrdersActionState {
 
   OrdersShowSuccessfullySentActionState(this.lottiePath, this.statusText);
 }
-
-/// keyin...
-class OrdersAddValueActionState extends OrdersActionState {
-  final int value;
-
-  OrdersAddValueActionState(this.value);
-}
-
-class OrdersRemoveValueActionState extends OrdersActionState {
-  final int value;
-
-  OrdersRemoveValueActionState(this.value);
-}

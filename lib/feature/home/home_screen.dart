@@ -16,7 +16,6 @@ import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
 
 class HomeScreen extends StatefulWidget {
   static const ROUTE_NAME = "/home";
-  final isSelectedColor = const Color(0xFF166200);
 
   static void open(BuildContext context) {
     Navigator.of(context).pushNamed(ROUTE_NAME);
@@ -33,26 +32,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  late TabController _tabController;
   late ScrollController _scrollController;
   late AnimationController _animateController;
-  int _selectedTabIndex = 0;
   final List<bool> _buttonStates = [];
+  final _isSelectedColor = const Color(0xFF166200);
 
   @override
   void initState() {
     super.initState();
+    context.read<HomeBloc>().add(HomeOnGetMenuListEvent());
     _scrollController = ScrollController(keepScrollOffset: false);
 
-    context.read<HomeBloc>().add(HomeOnGetMenuListEvent());
-    _animateController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+    _tabController = TabController(
+      length: context.watch<HomeBloc>().categoryTabLength,
       vsync: this,
     );
+
+    _animateController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
   }
 
   @override
   void dispose() {
     _animateController.dispose();
+    _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -61,8 +69,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final size = fillMaxSize(context);
     final orientation = MediaQuery.of(context).orientation;
     final double itemHeight = orientation == Orientation.portrait
-        ? (size.height - kToolbarHeight - 24) * 0.413
-        : (size.height - kToolbarHeight - 24) * 0.445;
+        ? (size.height - kToolbarHeight - 24) * 0.410
+        : (size.height - kToolbarHeight - 24) * 0.450;
     final double itemWidth =
         orientation == Orientation.portrait ? size.width / 2 : size.height / 4;
     // setupScrollController(gridItemHeight: itemHeight);
@@ -102,19 +110,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 return Tab(text: it.categoryName);
               }).toList();
               //ui🗿
-              return Center(
-                  child: Column(
+              return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   TabBar(
                     tabs: categoriesList,
                     labelStyle: const TextStyle(fontFamily: 'Ktwod'),
-                    controller: TabController(
-                      animationDuration: const Duration(milliseconds: 400),
-                      length: state.menuCategories.length,
-                      vsync: this,
-                      initialIndex: _selectedTabIndex,
-                    ),
+                    controller: _tabController,
                     physics: const ClampingScrollPhysics(),
                     isScrollable: true,
                     unselectedLabelColor:
@@ -122,16 +124,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     splashBorderRadius:
                         const BorderRadius.all(Radius.circular(120.0)),
                     indicator: CustomTabIndicator(
-                        Theme.of(context).colorScheme.primary),
+                      Theme.of(context).colorScheme.primary,
+                    ),
                     indicatorPadding: const EdgeInsets.all(4.0),
                     indicatorSize: TabBarIndicatorSize.tab,
                     automaticIndicatorColorAdjustment: true,
                     dividerColor: Colors.transparent,
-                    onTap: (categoryIndex) {
-                      setState(() {
-                        _selectedTabIndex = categoryIndex;
-                      });
-                    },
+                    onTap: (categoryIndex) {},
                   ),
                   Expanded(
                       child: GridView.builder(
@@ -149,13 +148,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             decelerationRate: ScrollDecelerationRate.fast),
                     padding: const EdgeInsets.all(10.0),
                     controller: _scrollController,
-                    itemCount: state.response.length,
+                    itemCount: state.menuProducts.length,
                     itemBuilder: (context, itemIndex) {
                       if (_buttonStates.length <= itemIndex) {
                         _buttonStates.add(false);
                       }
                       // indexing sorted data
-                      final item = state.response[itemIndex];
+                      final item = state.menuProducts[itemIndex];
                       final gridItem = _gridItemView(
                         productId: item.id!,
                         name: item.name,
@@ -169,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     },
                   )),
                 ],
-              ));
+              );
             } else if (state is HomeLoadingState) {
               return const Center(child: Skeleton());
             } else if (state is HomeErrorState) {
@@ -214,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required int itemIndex,
     required Orientation orientation,
   }) {
-    ElevatedButton addToCartButton = ElevatedButton.icon(
+    Widget addToCartButton = ElevatedButton.icon(
       onPressed: () async {
         setState(() {
           _buttonStates[itemIndex] = !_buttonStates[itemIndex];
@@ -231,12 +230,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: _buttonStates[itemIndex]
-            ? widget.isSelectedColor
+            ? _isSelectedColor
             : Theme.of(context).colorScheme.tertiary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(fillMaxWidth(context)),
         ),
-        minimumSize: Size(fillMaxWidth(context), fillMaxHeight(context) * 0.04),
+        minimumSize: Size(
+          fillMaxWidth(context),
+          orientation == Orientation.portrait
+              ? fillMaxHeight(context) * 0.04
+              : fillMaxHeight(context) * 0.08,
+        ),
         elevation: 4.0,
       ),
       label: TextView(
@@ -245,6 +249,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         textColor: Theme.of(context).colorScheme.onTertiary,
       ),
     );
+
     return Card(
         color: Theme.of(context).colorScheme.primaryContainer,
         shape: RoundedRectangleBorder(
@@ -260,21 +265,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              CachedImageView(
-                imageUrl: image,
-                width: fillMaxWidth(context),
-                height: fillMaxHeight(context) * 0.156,
-                controller: AnimationController(
-                  vsync: this,
-                  duration: const Duration(milliseconds: 1500),
-                )..repeat(reverse: true),
-                borderRadius: 14.0,
+              Expanded(
+                child: Hero(
+                  tag: "image_hero_$name",
+                  child: CachedImageView(
+                    imageUrl: image,
+                    width: fillMaxWidth(context),
+                    height: fillMaxHeight(context) * 0.16,
+                    controller: _animateController,
+                    borderRadius: 14.0,
+                  ),
+                ),
               ),
               const SizedBox(height: 8.0),
-              Expanded(
-                  child: Column(
+              Column(
+                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -300,10 +307,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     weight: FontWeight.normal,
                     textColor: Theme.of(context).colorScheme.outline,
                   ),
-                  const SizedBox(height: 4),
-                  addToCartButton /* add to cart button */,
+                  const SizedBox(height: 6.0),
                 ],
-              ))
+              ),
+              addToCartButton /* add to cart button */,
             ],
           ),
         ));

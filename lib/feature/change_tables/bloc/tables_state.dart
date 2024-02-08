@@ -30,14 +30,8 @@ class TablesNavigateToHomeScreenActionState extends TablesActionState {}
 
 class TablesShowChangeTableDialogActionState extends TablesActionState {
   final List<int> tableNumbers;
-  final List<TablePasswordsEntity> tablePasswords;
-  final String currentTableNumber;
 
-  TablesShowChangeTableDialogActionState({
-    required this.tableNumbers,
-    required this.tablePasswords,
-    required this.currentTableNumber,
-  });
+  TablesShowChangeTableDialogActionState({required this.tableNumbers});
 }
 
 class TablesValidPasswordState extends TablesActionState {

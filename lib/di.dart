@@ -1,7 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
-import 'package:night_fall_restaurant/domain/use_cases/get_menu_products_use_case.dart';
-import 'package:night_fall_restaurant/domain/use_cases/get_order_products_use_case.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:night_fall_restaurant/core/theme/cubit/theme_cubit.dart';
 import 'package:night_fall_restaurant/core/theme/theme_manager.dart';
 import 'package:night_fall_restaurant/data/local/db/app_database.dart';
 import 'package:night_fall_restaurant/data/local/db/dao/menu_products_dao.dart';
@@ -12,14 +11,17 @@ import 'package:night_fall_restaurant/data/shared/shared_preferences.dart';
 import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository.dart';
 import 'package:night_fall_restaurant/domain/repository/orders_repository/orders_repository_impl.dart';
 import 'package:night_fall_restaurant/domain/use_cases/get_menu_categories_use_case.dart';
+import 'package:night_fall_restaurant/domain/use_cases/get_menu_products_use_case.dart';
+import 'package:night_fall_restaurant/domain/use_cases/get_order_products_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/get_single_product_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/send_orders_to_fire_store_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_menu_products_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/sync_tables_password_use_case.dart';
 import 'package:night_fall_restaurant/domain/use_cases/tables_password_use_case.dart';
+import 'package:night_fall_restaurant/feature/change_tables/bloc/tables_bloc.dart';
 import 'package:night_fall_restaurant/feature/home/bloc/home_bloc.dart';
-import 'package:night_fall_restaurant/feature/main_tables/bloc/tables_bloc.dart';
 import 'package:night_fall_restaurant/feature/orders/bloc/orders_bloc.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'data/remote/fire_store_services/fire_store_service.dart';
 import 'domain/repository/main_repository/repository.dart';
@@ -52,6 +54,10 @@ Future<void> setupDependencies() async {
   getIt.registerFactory<OrdersBloc>(() => OrdersBloc(
         repository: getIt<OrdersRepository>(),
         sharedPreferences: getIt<AppSharedPreferences>(),
+      ));
+
+  getIt.registerFactory<ThemeCubit>(() => ThemeCubit(
+        getIt<AppSharedPreferences>(),
       ));
 
   /// repository
@@ -112,10 +118,12 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<OrdersDao>(() => OrdersDao(getIt<Database>()));
 
   /// others
-  getIt.registerLazySingleton<FireStoreService>(() => FireStoreServiceImpl());
+  getIt.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
+
+  getIt.registerLazySingleton<FireStoreService>(
+      () => FireStoreServiceImpl(getIt<FirebaseFirestore>()));
 
   getIt.registerLazySingleton<ThemeManager>(() => ThemeManager());
 
-  getIt.registerLazySingleton<AppSharedPreferences>(
-      () => AppSharedPreferences());
+  getIt.registerLazySingleton<AppSharedPreferences>(AppSharedPreferences.new);
 }

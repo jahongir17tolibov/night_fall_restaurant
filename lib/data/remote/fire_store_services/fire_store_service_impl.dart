@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:night_fall_restaurant/data/remote/model/send_to_firebase_models/send_orders_model.dart';
 
-import '../model/tables_password_response.dart';
 import '../model/get_menu_list_response.dart';
+import '../model/tables_password_response.dart';
 import 'fire_store_service.dart';
 
 class FireStoreServiceImpl extends FireStoreService {
-  static final _fireStore = FirebaseFirestore.instance;
+  final FirebaseFirestore _fireStore;
+
+  FireStoreServiceImpl(this._fireStore);
+
   static const String _menuCollectionPath = 'products_menu';
   static const String _tablesCollectionPath = 'tables_passwords';
   static const String _ordersCollectionPath = 'orders';

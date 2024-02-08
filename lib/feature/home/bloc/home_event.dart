@@ -5,6 +5,12 @@ sealed class HomeEvent {}
 
 class HomeOnGetMenuListEvent extends HomeEvent {}
 
+class HomeOnTabChangedEvent extends HomeEvent {
+  final int categoryIndex;
+
+  HomeOnTabChangedEvent(this.categoryIndex);
+}
+
 class HomeOnButtonClickedEvent extends HomeEvent {
   final int index;
 

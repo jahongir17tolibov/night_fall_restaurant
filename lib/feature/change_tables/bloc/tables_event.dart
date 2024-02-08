@@ -16,13 +16,11 @@ class TablesOnPasswordSubmitEvent extends TablesEvent {
 }
 
 class TablesOnChangeTableNumberEvent extends TablesEvent {
-  final List<TablePasswordsEntity> tablePasswords;
-  final String tableNumber;
+  final List<int> tableNumbers;
   final int selectedItem;
 
   TablesOnChangeTableNumberEvent({
-    required this.tablePasswords,
-    required this.tableNumber,
+    required this.tableNumbers,
     required this.selectedItem,
   });
 }
@@ -31,14 +29,8 @@ class TablesOnNavigateToHomeScreenEvent extends TablesEvent {}
 
 class TablesOnShowChangeTableDialogEvent extends TablesEvent {
   final List<int> tableNumbers;
-  final List<TablePasswordsEntity> tablePasswords;
-  final String currentTableNumber;
 
-  TablesOnShowChangeTableDialogEvent({
-    required this.tableNumbers,
-    required this.tablePasswords,
-    required this.currentTableNumber,
-  });
+  TablesOnShowChangeTableDialogEvent({required this.tableNumbers});
 }
 
 class TablesOnCheckAndSubmitEvent extends TablesEvent {}

@@ -14,3 +14,15 @@ class OrdersOnSendProductsToFireStoreEvent extends OrdersEvent {
 
   OrdersOnSendProductsToFireStoreEvent(this.orders);
 }
+
+class OrderIncreaseProductEvent extends OrdersEvent {
+  final OrderProductsModel orderProduct;
+
+  OrderIncreaseProductEvent(this.orderProduct);
+}
+
+class OrderDecreaseProductEvent extends OrdersEvent {
+  final OrderProductsModel orderProduct;
+
+  OrderDecreaseProductEvent(this.orderProduct);
+}

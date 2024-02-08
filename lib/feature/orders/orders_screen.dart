@@ -4,18 +4,19 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:night_fall_restaurant/domain/model/order_products_model.dart';
 import 'package:night_fall_restaurant/feature/home/home_screen.dart';
 import 'package:night_fall_restaurant/feature/orders/bloc/orders_bloc.dart';
+import 'package:night_fall_restaurant/feature/orders/widget/order_product_price_card.dart';
 import 'package:night_fall_restaurant/utils/helpers.dart';
 import 'package:night_fall_restaurant/utils/ui_components/cached_image_view.dart';
 import 'package:night_fall_restaurant/utils/ui_components/error_widget.dart';
 import 'package:night_fall_restaurant/utils/ui_components/show_snack_bar.dart';
 import 'package:night_fall_restaurant/utils/ui_components/standart_text.dart';
-import 'package:provider/provider.dart';
 
 class OrdersScreen extends StatefulWidget {
   static const String ROUTE_NAME = "/orders";
@@ -33,26 +34,12 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
+  late int _totalPrice;
   static const String lottieFilePath = 'assets/anim/cart_is_empty_lottie.json';
-
-  late int _pricesCount;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(vsync: this);
-    context.read<OrdersBloc>().add(OrdersOnGetProductsEvent());
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    _pricesCount = context.watch<OrdersBloc>().pricesCount;
+    _totalPrice = context.watch<OrdersBloc>().calculatePrices;
     return WillPopScope(
       child: Scaffold(
         appBar: AppBar(
@@ -95,44 +82,42 @@ class _OrdersScreenState extends State<OrdersScreen>
                     radius: 36.0,
                   ),
                 );
+
               case OrdersSuccessState():
-                {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Expanded(
-                          child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 4.0,
-                                horizontal: 4.0,
-                              ),
-                              scrollDirection: Axis.vertical,
-                              physics: Platform.isIOS
-                                  ? const BouncingScrollPhysics()
-                                  : const BouncingScrollPhysics(),
-                              itemCount: state.ordersList.length,
-                              itemBuilder: (context, index) {
-                                final item = state.ordersList[index];
-                                return ChangeNotifierProvider<
-                                    OrderProductsModel>(
-                                  create: (_) => item,
-                                  child: Consumer<OrderProductsModel>(
-                                      builder: (context, model, _) =>
-                                          _ordersItem(item: model)),
-                                );
-                              }),
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4.0,
+                          horizontal: 4.0,
                         ),
-                        _ordersListCard(list: state.ordersList),
-                      ],
+                        scrollDirection: Axis.vertical,
+                        physics: Platform.isIOS
+                            ? const BouncingScrollPhysics()
+                            : const BouncingScrollPhysics(),
+                        itemCount: state.ordersList.length,
+                        itemBuilder: (context, index) {
+                          final item = state.ordersList[index];
+                          return _ordersItem(orderProduct: item);
+                        },
+                      ),
                     ),
-                  );
-                }
+                    OrderProductPriceCard(
+                      orderProductsList: state.ordersList,
+                      totalPrice: _totalPrice,
+                    ),
+                  ],
+                );
+
               case OrdersIsEmptyState():
                 return _cartIsEmptyAnim();
+
               case OrdersErrorState():
                 return errorWidget(state.error, context);
+
               default:
                 return Container();
             }
@@ -157,6 +142,24 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _portraitModeOnly();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    context.read<OrdersBloc>().add(OrdersOnGetProductsEvent());
+  }
+
+  @override
+  void dispose() {
+    _enableRotation();
+    _animationController.dispose();
+    super.dispose();
+  }
+
   void _showWhenSentDialog(String lottiePath, String status) {
     showAdaptiveDialog(
       context: context,
@@ -171,7 +174,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           borderRadius: const BorderRadius.all(Radius.circular(8.0)),
         ),
         backgroundColor:
-            Theme.of(context).colorScheme.primaryContainer.withOpacity(0.92),
+            Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.2),
         elevation: 4.0,
         content: SizedBox(
           width: fillMaxWidth(context),
@@ -211,72 +214,67 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   /// orders list side
-  Widget _ordersItem({required OrderProductsModel item}) {
+  Widget _ordersItem({required OrderProductsModel orderProduct}) {
     /// add or remove products widget
     Widget amountProductsWidget = Container(
-      width: fillMaxWidth(context) * 0.21,
-      height: fillMaxHeight(context) * 0.034,
+      width: fillMaxWidth(context) * 0.26,
+      margin: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.outline.withOpacity(0.4),
         borderRadius: BorderRadius.circular(fillMaxWidth(context)),
       ),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            /// remove button
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                onPressed: item.decrease,
-                icon: Icon(
-                  Icons.remove_rounded,
-                  size: 16.0,
-                  color: Theme.of(context).colorScheme.onBackground,
-                ),
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          /// remove button
+          IconButton(
+            onPressed: () {
+              context
+                  .read<OrdersBloc>()
+                  .add(OrderDecreaseProductEvent(orderProduct));
+            },
+            icon: Icon(
+              Icons.remove_rounded,
+              size: 16.0,
+              color: Theme.of(context).colorScheme.onBackground,
             ),
+          ),
 
-            /// value state text
-            Expanded(
-              flex: 1,
-              child: Center(
-                child: TextView(
-                  text: "${item.quantity}",
-                  textColor: Theme.of(context).colorScheme.onBackground,
-                  textSize: 14.0,
-                  weight: FontWeight.w500,
-                  maxLines: 1,
-                ),
-              ),
+          /// value state text
+          Center(
+            child: TextView(
+              text: "${orderProduct.quantity}",
+              textColor: Theme.of(context).colorScheme.onBackground,
+              textSize: 14.0,
+              weight: FontWeight.w500,
+              maxLines: 1,
             ),
+          ),
 
-            /// add button
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                onPressed: item.increase,
-                icon: Icon(
-                  Icons.add_rounded,
-                  size: 16.0,
-                  color: Theme.of(context).colorScheme.onBackground,
-                ),
-              ),
+          /// add button
+          IconButton(
+            onPressed: () {
+              context
+                  .read<OrdersBloc>()
+                  .add(OrderIncreaseProductEvent(orderProduct));
+            },
+            icon: Icon(
+              Icons.add_rounded,
+              size: 16.0,
+              color: Theme.of(context).colorScheme.onBackground,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
 
     /// imageView
     Widget productsImage = CachedImageView(
-      imageUrl: item.image,
+      imageUrl: orderProduct.image,
       width: fillMaxWidth(context) * 0.175,
-      height: fillMaxHeight(context) * 0.1,
-      controller: AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1500),
-      )..repeat(reverse: true),
+      height: fillMaxHeight(context) * 0.2,
+      controller: _animationController,
       borderRadius: 14.0,
     );
 
@@ -292,14 +290,14 @@ class _OrdersScreenState extends State<OrdersScreen>
           borderRadius: BorderRadius.circular(12.0),
         ),
         title: TextView(
-          text: item.name,
+          text: orderProduct.name,
           textColor: Theme.of(context).colorScheme.onSurface,
           textSize: 22.0,
           maxLines: 1,
           weight: FontWeight.w500,
         ),
         subtitle: TextView(
-          text: item.price,
+          text: orderProduct.price,
           textColor: Theme.of(context).colorScheme.onSurface,
           textSize: 12.5,
           maxLines: 1,
@@ -309,7 +307,8 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   /// send orders side
-  Widget _ordersListCard({required List<OrderProductsModel> list}) => Card(
+  Widget _orderProductPriceCard({required List<OrderProductsModel> list}) =>
+      Card(
         color: Theme.of(context).colorScheme.secondary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
@@ -350,7 +349,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                   ),
                   TextView(
                     text:
-                        "${NumberFormat.decimalPatternDigits().format(_pricesCount)} so`m",
+                        "${NumberFormat.decimalPatternDigits().format(_totalPrice)} so`m",
                     textColor: Theme.of(context).colorScheme.onSecondary,
                     textSize: 20.0,
                     weight: FontWeight.w700,
@@ -415,7 +414,8 @@ class _OrdersScreenState extends State<OrdersScreen>
             ),
             const SizedBox(width: 10.0),
             TextView(
-              text: price,
+              text:
+                  "${int.parse(price.replaceAll('so`m', '').replaceAll(' ', '')) * int.parse(count)}so`m",
               textColor: Theme.of(context).colorScheme.onSecondary,
               maxLines: 1,
               textSize: 14.0,
@@ -431,4 +431,20 @@ class _OrdersScreenState extends State<OrdersScreen>
         width: 300.0,
         height: 300.0,
       ));
+
+  void _portraitModeOnly() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  void _enableRotation() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
 }

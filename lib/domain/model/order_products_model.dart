@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:night_fall_restaurant/data/local/entities/orders_entity.dart';
 
-class OrderProductsModel extends ChangeNotifier {
+class OrderProductsModel {
   final int? id;
   final String productCategoryId;
   final String fireId;
@@ -9,9 +8,7 @@ class OrderProductsModel extends ChangeNotifier {
   final String image;
   final String price;
   final String weight;
-  int _quantity;
-
-  int get quantity => _quantity;
+  int quantity;
 
   OrderProductsModel({
     this.id,
@@ -21,26 +18,26 @@ class OrderProductsModel extends ChangeNotifier {
     required this.image,
     required this.price,
     required this.weight,
-    required int quantity,
-  }) : _quantity = quantity;
+    required this.quantity,
+  });
 
-  void increase() {
-    int newQuantity = _quantity + 1;
-    if (newQuantity <= 10) {
-      _quantity = newQuantity;
-      notifyListeners();
-    } else {
-      throw Exception('no more than 10 items can be ordered');
-    }
-  }
+  // void increase() {
+  //   int newQuantity = _quantity + 1;
+  //   if (newQuantity <= 10) {
+  //     _quantity = newQuantity;
+  //     notifyListeners();
+  //   } else {
+  //     throw Exception('no more than 10 items can be ordered');
+  //   }
+  // }
 
-  void decrease() {
-    int newQuantity = _quantity - 1;
-    if (newQuantity >= 0) {
-      _quantity = newQuantity;
-      notifyListeners();
-    }
-  }
+  // void decrease() {
+  //   int newQuantity = _quantity - 1;
+  //   if (newQuantity >= 0) {
+  //     _quantity = newQuantity;
+  //     notifyListeners();
+  //   }
+  // }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
         'id': id,
@@ -50,7 +47,7 @@ class OrderProductsModel extends ChangeNotifier {
         'image': image,
         'price': price,
         'weight': weight,
-        'quantity': _quantity,
+        'quantity': quantity,
       };
 
   factory OrderProductsModel.fromMap(Map<String, dynamic> map) =>
@@ -88,7 +85,7 @@ class OrderProductsModel extends ChangeNotifier {
           image == other.image &&
           price == other.price &&
           weight == other.weight &&
-          _quantity == other._quantity;
+          quantity == other.quantity;
 
   @override
   int get hashCode =>
@@ -99,5 +96,5 @@ class OrderProductsModel extends ChangeNotifier {
       image.hashCode ^
       price.hashCode ^
       weight.hashCode ^
-      _quantity.hashCode;
+      quantity.hashCode;
 }
